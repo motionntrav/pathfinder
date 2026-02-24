@@ -574,7 +574,7 @@ export default function LandingPage({ onStart }) {
 
         <main className="hero-section">
           <h1 className="hero-title">
-            Find Your <span>True North.</span>
+            Follow Your <span>North Star</span>
           </h1>
 
           <p className="hero-subtitle">
