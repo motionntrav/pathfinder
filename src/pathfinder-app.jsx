@@ -160,6 +160,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--star);ov
 .tboard{flex:1;overflow-y:auto;padding:1.25rem;display:grid;grid-template-columns:repeat(12,1fr);gap:.85rem;align-content:start}
 .tboard::-webkit-scrollbar{width:3px}.tboard::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
 
+
 /* Card base */
 .tc{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:1.1rem 1.2rem;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s;animation:up .5s calc(var(--d,0)*.06s) ease both}
 .tc:hover{border-color:rgba(255,255,255,.1);box-shadow:0 6px 28px rgba(0,0,0,.3)}
@@ -206,25 +207,67 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--star);ov
 .const-counter{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--aqua);line-height:1}
 .const-sub{font-size:.72rem;color:var(--dim);margin-top:.2rem}
 
-/* QUANTUM QUESTS */
-.qq-list{display:flex;flex-direction:column;gap:.55rem}
-.qq{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:.8rem .95rem;display:flex;align-items:flex-start;gap:.7rem;cursor:pointer;transition:all .2s}
-.qq:hover{border-color:rgba(255,255,255,.12);background:var(--ch)}
-.qq.done{opacity:.45}
-.qq-box{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;margin-top:1px}
-.qq:hover .qq-box{border-color:var(--gold)}.qq.done .qq-box{background:rgba(94,234,212,.2);border-color:var(--aqua)}
+/* QUANTUM QUESTS — hero action card */
+.qq-hero-label{font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1.2rem;display:flex;align-items:center;gap:.42rem}
+.qq-list{display:flex;flex-direction:column;gap:.7rem}
+.qq{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:1rem 1.1rem;display:flex;align-items:flex-start;gap:.8rem;cursor:pointer;transition:all .25s cubic-bezier(.22,1,.36,1);position:relative;overflow:hidden}
+.qq::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;border-radius:3px 0 0 3px;transition:background .25s}
+.qq:hover{border-color:rgba(232,184,75,.25);background:rgba(232,184,75,.04)}
+.qq:hover::before{background:var(--gold)}
+.qq.done{opacity:.4}
+.qq.done::before{background:var(--aqua)}
+.qq-box{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--dim);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .25s cubic-bezier(.34,1.56,.64,1);margin-top:1px;position:relative}
+.qq:hover .qq-box{border-color:var(--gold);transform:scale(1.12);background:var(--gold-pale)}
+.qq.done .qq-box{background:rgba(94,234,212,.18);border-color:var(--aqua)}
 .qq-body{flex:1}
-.qq-title{font-size:.83rem;font-weight:600;margin-bottom:.18rem;transition:all .2s}.qq.done .qq-title{text-decoration:line-through;color:var(--dim)}
-.qq-why{font-size:.73rem;color:var(--dim);line-height:1.4}
-.qq-meta{display:flex;gap:.4rem;margin-top:.38rem;align-items:center}
-.qq-xp{font-size:.63rem;font-weight:600;font-family:'DM Mono',monospace;color:var(--violet);background:var(--vp);border:1px solid rgba(157,127,240,.2);border-radius:4px;padding:.08rem .38rem}
-.qq-diff{font-size:.63rem;font-weight:600;border-radius:4px;padding:.08rem .38rem}
+.qq-title{font-size:.92rem;font-weight:600;margin-bottom:.22rem;line-height:1.35;transition:all .2s}.qq.done .qq-title{text-decoration:line-through;color:var(--dim)}
+.qq-why{font-size:.76rem;color:var(--dim);line-height:1.5}
+.qq-meta{display:flex;gap:.4rem;margin-top:.45rem;align-items:center}
+.qq-xp{font-size:.65rem;font-weight:700;font-family:'DM Mono',monospace;color:var(--violet);background:var(--vp);border:1px solid rgba(157,127,240,.2);border-radius:4px;padding:.1rem .42rem}
+.qq-diff{font-size:.65rem;font-weight:700;border-radius:4px;padding:.1rem .42rem}
 .diff-e{color:var(--aqua);background:var(--aq-pale);border:1px solid rgba(94,234,212,.2)}
 .diff-m{color:var(--gold);background:var(--gold-pale);border:1px solid var(--line-gold)}
 .diff-h{color:var(--rose);background:var(--rose-pale);border:1px solid rgba(244,114,182,.2)}
 .qq-mood{font-size:.63rem;color:var(--dim);margin-left:auto;font-style:italic}
 .qq-reload{background:none;border:none;color:var(--dim);cursor:pointer;padding:.15rem;border-radius:4px;transition:all .2s;display:flex;align-items:center}
 .qq-reload:hover{color:var(--gold);background:var(--gold-pale)}
+
+/* BURST PARTICLE */
+.burst-wrap{position:fixed;pointer-events:none;z-index:999;width:0;height:0}
+.burst-p{position:absolute;width:6px;height:6px;border-radius:50%;animation:burst-fly .65s ease-out forwards}
+@keyframes burst-fly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+
+/* XP BAR SHIMMER */
+@keyframes xp-shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+.xp-fill-shimmer{position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.45) 50%,transparent 100%);background-size:200% 100%;animation:xp-shimmer .7s ease forwards;border-radius:2px}
+
+/* LEVEL-UP OVERLAY */
+.lvlup{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;background:rgba(4,5,13,.88);backdrop-filter:blur(18px);animation:up .4s ease}
+.lvlup-card{text-align:center;display:flex;flex-direction:column;align-items:center;gap:1rem}
+.lvlup-star{animation:pulse-star 1s ease-in-out infinite;color:var(--gold)}
+.lvlup-eyebrow{font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);opacity:.8}
+.lvlup-name{font-family:'Cormorant Garamond',serif;font-size:clamp(2.4rem,7vw,4rem);font-weight:700;background:linear-gradient(135deg,var(--gold2),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1}
+.lvlup-sub{font-size:.85rem;color:var(--dim);max-width:300px;line-height:1.6}
+
+/* REFLECTION CARD accent */
+.reflect-label{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.75rem;letter-spacing:.06em;color:var(--dim);margin-bottom:1rem;display:flex;align-items:center;gap:.42rem;opacity:.8}
+.widget.narr{border-left:3px solid rgba(244,114,182,.22)}
+.widget.prop{border-left:3px solid rgba(157,127,240,.22)}
+
+/* CONSTELLATION HOVER */
+.const-star-label{font-family:'DM Sans',sans-serif;font-size:8px;fill:var(--aqua);opacity:0;transition:opacity .2s;pointer-events:none}
+.const-star-g:hover .const-star-label{opacity:1}
+.const-star-g:hover circle:last-of-type{r:4;filter:url(#glow)}
+
+/* PROLOGUE STEP */
+.prologue-wrap{display:flex;flex-direction:column;align-items:center;text-align:center;max-width:620px;animation:up .8s cubic-bezier(.22,1,.36,1) both}
+.prologue-eyebrow{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--rose);margin-bottom:1.4rem;opacity:0;animation:up .6s .2s ease both}
+.prologue-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:700;color:var(--star);margin-bottom:2rem;opacity:0;animation:up .7s .35s ease both;line-height:1.15}
+.prologue-prophecy{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(1.05rem,2.5vw,1.3rem);line-height:1.8;color:var(--star);margin-bottom:.8rem;opacity:0;animation:up .8s .55s ease both;background:linear-gradient(160deg,rgba(244,114,182,.08),rgba(157,127,240,.08));border:1px solid rgba(244,114,182,.18);border-radius:14px;padding:1.6rem 2rem;position:relative}
+.prologue-prophecy::before{content:'❝';position:absolute;top:.6rem;left:.9rem;font-size:1.4rem;color:var(--rose);opacity:.35;font-style:normal}
+.prologue-attr{font-size:.75rem;color:var(--dim);margin-bottom:2.2rem;opacity:0;animation:up .6s .75s ease both}
+.prologue-attr span{color:var(--rose)}
+.prologue-glow{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(244,114,182,.08),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;animation:breathe 4s ease-in-out infinite}
 
 /* NARRATIVE thread */
 .narr{background:linear-gradient(140deg,rgba(232,184,75,.05) 0%,rgba(157,127,240,.04) 100%);border-color:var(--line-gold)}
@@ -352,15 +395,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--star);ov
 .age-pill.on{border-color:var(--gold);background:var(--gold-pale);color:var(--gold);font-weight:600}
 
 /* WIDGET DASHBOARD */
-.wboard{flex:1;overflow-y:auto;padding:1.4rem;display:flex;flex-direction:column;gap:1rem}
+.wboard{flex:1;overflow-y:auto;padding:1.6rem;display:flex;flex-direction:column;gap:1.4rem}
 .wboard::-webkit-scrollbar{width:3px}.wboard::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
-.w-row{display:grid;gap:1rem}
+.w-row{display:grid;gap:1.2rem}
 .w-row-2{grid-template-columns:1fr 1fr}
 .w-row-3{grid-template-columns:1fr 1fr 1fr}
 .w-row-1{grid-template-columns:1fr}
 @media(max-width:800px){.w-row-2,.w-row-3{grid-template-columns:1fr}}
-.widget{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1.4rem 1.5rem;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s;animation:up .5s calc(var(--d,0)*.08s) ease both}
+.widget{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1.5rem 1.6rem;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s;animation:up .5s calc(var(--d,0)*.08s) ease both}
 .widget:hover{border-color:rgba(255,255,255,.1);box-shadow:0 6px 28px rgba(0,0,0,.3)}
+/* Daily Quests — hero action card */
+.widget.quest-hero{border-top:3px solid var(--gold);background:linear-gradient(160deg,rgba(232,184,75,.05) 0%,rgba(4,5,13,0) 60%);padding-top:1.6rem}
 .w-title{font-size:.65rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:1rem;display:flex;align-items:center;gap:.4rem}
 .w-greeting{font-family:'Cormorant Garamond',serif;font-size:1.45rem;font-weight:600;color:var(--star);margin-bottom:.35rem;line-height:1.2}
 .w-greeting span{color:var(--gold)}
@@ -473,35 +518,65 @@ After 3+ real exchanges, generate their roadmap:
 //  CONSTELLATION SVG
 // ─────────────────────────────────────────────────────────────
 function Constellation({ wins }) {
-  const W = 280, H = 150;
+  const W = 320, H = 180;
   if (!wins.length) return <div className="const-empty">Complete quests — watch your constellation grow</div>;
   const pts = wins.map((_, i) => {
     const seed = i * 137.5;
-    return { x: 20 + (Math.sin(seed) * 0.5 + 0.5) * (W - 40), y: 15 + (Math.cos(seed * 1.3) * 0.5 + 0.5) * (H - 30) };
+    return { x: 24 + (Math.sin(seed) * 0.5 + 0.5) * (W - 48), y: 18 + (Math.cos(seed * 1.3) * 0.5 + 0.5) * (H - 36) };
   });
+  // Ghost "next star" position
+  const ghostSeed = wins.length * 137.5;
+  const ghost = { x: 24 + (Math.sin(ghostSeed) * 0.5 + 0.5) * (W - 48), y: 18 + (Math.cos(ghostSeed * 1.3) * 0.5 + 0.5) * (H - 36) };
   return (
-    <svg className="const-svg" viewBox={`0 0 ${W} ${H}`}>
+    <svg className="const-svg" viewBox={`0 0 ${W} ${H}`} style={{ overflow: "visible" }}>
       <defs>
+        <radialGradient id="nebula" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#5eead4" stopOpacity="0.04" />
+          <stop offset="55%" stopColor="#9d7ff0" stopOpacity="0.03" />
+          <stop offset="100%" stopColor="#9d7ff0" stopOpacity="0" />
+        </radialGradient>
         <radialGradient id="sg" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#5eead4" stopOpacity="1" />
           <stop offset="100%" stopColor="#5eead4" stopOpacity="0" />
         </radialGradient>
         <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+        <style>{`.const-star-g:hover text{opacity:1}.const-star-g text{opacity:0;transition:opacity .2s}`}</style>
       </defs>
-      {pts.slice(1).map((p, i) => (
-        <line key={i} x1={pts[i].x} y1={pts[i].y} x2={p.x} y2={p.y}
-          stroke="rgba(94,234,212,0.18)" strokeWidth="1"
-          strokeDasharray={`${Math.hypot(p.x - pts[i].x, p.y - pts[i].y)}`}
-          style={{ animation: `draw-line 1s ${i * 0.15}s ease forwards`, strokeDashoffset: `${Math.hypot(p.x - pts[i].x, p.y - pts[i].y)}` }}
-        />
-      ))}
-      {pts.map((p, i) => (
-        <g key={i} filter="url(#glow)" style={{ animation: `star-pop .5s ${i * 0.12}s cubic-bezier(.34,1.56,.64,1) both` }}>
-          <circle cx={p.x} cy={p.y} r="6" fill="url(#sg)" opacity=".3" />
-          <circle cx={p.x} cy={p.y} r="2.5" fill="#5eead4" />
-          <title>{wins[i]}</title>
-        </g>
-      ))}
+      {/* Nebula wash */}
+      <ellipse cx={W / 2} cy={H / 2} rx={W * 0.55} ry={H * 0.55} fill="url(#nebula)" />
+      {/* Constellation lines */}
+      {pts.slice(1).map((p, i) => {
+        const len = Math.hypot(p.x - pts[i].x, p.y - pts[i].y);
+        return (
+          <line key={i} x1={pts[i].x} y1={pts[i].y} x2={p.x} y2={p.y}
+            stroke="rgba(94,234,212,0.22)" strokeWidth="1"
+            strokeDasharray={`${len}`}
+            style={{ animation: `draw-line 1.1s ${i * 0.18}s ease forwards`, strokeDashoffset: `${len}` }}
+          />
+        );
+      })}
+      {/* Ghost next-star hint */}
+      <circle cx={ghost.x} cy={ghost.y} r="4" fill="none"
+        stroke="rgba(94,234,212,0.2)" strokeWidth="1" strokeDasharray="2 3"
+        style={{ animation: `star-pop .5s ${wins.length * 0.12}s cubic-bezier(.34,1.56,.64,1) both` }}
+      />
+      {/* Stars */}
+      {pts.map((p, i) => {
+        const r = 2 + (i % 3) * 0.9; // older wins = bigger
+        const yr = r + 3;
+        const label = wins[i]?.length > 22 ? wins[i].slice(0, 22) + "…" : wins[i];
+        return (
+          <g key={i} className="const-star-g" filter="url(#glow)"
+            style={{ animation: `star-pop .5s ${i * 0.12}s cubic-bezier(.34,1.56,.64,1) both`, cursor: "default" }}>
+            <circle cx={p.x} cy={p.y} r={yr} fill="url(#sg)" opacity=".28" />
+            <circle cx={p.x} cy={p.y} r={r} fill="#5eead4" />
+            <text x={p.x} y={p.y + yr + 9} textAnchor="middle"
+              style={{ fontFamily: "'DM Sans',sans-serif", fontSize: "7.5px", fill: "#5eead4", opacity: 0, transition: "opacity .2s", pointerEvents: "none" }}>
+              {label}
+            </text>
+          </g>
+        );
+      })}
     </svg>
   );
 }
@@ -534,13 +609,25 @@ function Onboarding({ onDone }) {
   const [persona, setPersona] = useState(null);
   const [sit, setSit] = useState(null);
   const [goal, setGoal] = useState("");
-
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
+  const [prologueProphecy, setPrologueProphecy] = useState("");
 
   const next = () => { setOut(true); setTimeout(() => { setOut(false); setStep(s => s + 1) }, 360) };
   const back = () => { setOut(true); setTimeout(() => { setOut(false); setStep(s => s - 1) }, 300) };
-  const launch = () => { setStep(6); setTimeout(() => onDone({ persona, situation: sit, goal, name: name.trim(), age }), 2500) };
+  const launch = async () => {
+    setStep(6);
+    // Generate prophecy during loading so it's ready for prologue
+    const prof = { persona, situation: sit, goal, name: name.trim(), age };
+    const prop = await genProphecy(prof);
+    setPrologueProphecy(prop);
+    setStep(7);
+  };
+
+  const enterApp = () => {
+    const prof = { persona, situation: sit, goal, name: name.trim(), age };
+    onDone({ ...prof, prologueProphecy });
+  };
 
   return (
     <div className="ob">
@@ -642,9 +729,22 @@ function Onboarding({ onDone }) {
         {step === 6 && (
           <div className="launch-wrap">
             <div className="launch-star"><I.Star s={70} style={{ color: "var(--gold)" }} /></div>
-            <div className="launch-title">Building your transformation engine...</div>
-            <div className="launch-sub">Generating quests • Crafting your prophecy • Mapping your path</div>
+            <div className="launch-title">Reading the path ahead...</div>
+            <div className="launch-sub">Crafting your prophecy • Generating quests • Building your engine</div>
             <div className="launch-bar"><div className="launch-fill" /></div>
+          </div>
+        )}
+
+        {step === 7 && (
+          <div className="prologue-wrap">
+            <div className="prologue-glow" />
+            <div className="prologue-eyebrow">✦ Your Prophecy Has Arrived</div>
+            <div className="prologue-title">PathFinder sees<br />what's coming.</div>
+            <div className="prologue-prophecy">{prologueProphecy || "Around week three, you'll wake up and the goal will feel distant — like a story you told yourself. That's not failure. That's the moment where everyone else quits and you don't."}</div>
+            <div className="prologue-attr">This is what's coming for you, <span>{name || "traveler"}</span>. PathFinder has seen it.</div>
+            <button className="ob-btn" style={{ margin: "0 auto" }} onClick={enterApp}>
+              I'm ready — begin my path <I.Arrow s={13} c="var(--ink)" />
+            </button>
           </div>
         )}
       </div>
@@ -684,6 +784,9 @@ export default function App() {
   const [pendingQ, setPendingQ] = useState(null);
   const [questsLoading, setQuestsLoading] = useState(false);
   const [xpToast, setXpToast] = useState(null);
+  const [levelUpModal, setLevelUpModal] = useState(null); // { name, lv }
+  const [xpShimmer, setXpShimmer] = useState(false);
+  const [burst, setBurst] = useState(null); // { x, y }
   const toastTimer = useRef(null);
   const endRef = useRef(null);
   const taRef = useRef(null);
@@ -694,30 +797,47 @@ export default function App() {
     toastTimer.current = setTimeout(() => setXpToast(null), 2800);
   };
 
-  const handleDone = useCallback(async ({ persona, situation, goal, name, age }) => {
+  const fireBurst = (el) => {
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    setBurst({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+    setTimeout(() => setBurst(null), 700);
+  };
+
+  const triggerXpShimmer = () => {
+    setXpShimmer(true);
+    setTimeout(() => setXpShimmer(false), 800);
+  };
+
+  const handleDone = useCallback(async ({ persona, situation, goal, name, age, prologueProphecy }) => {
     const prof = { persona, situation, goal, name, age };
     setProfile(prof);
     const greet = name ? `Hey ${name}` : "Hello";
     setMsgs([{ role: "ai", content: `${greet} — you've named your North Star: *"${goal}"*\n\nThat took courage. Most people never say it out loud. I'm not here to give you information; I'm here to help you become the version of yourself who actually lives that goal.\n\nBefore I map your path, tell me something real: what have you already tried? And what stopped you?` }]);
     setBoarded(true);
     setTimeout(() => setShow(true), 80);
+    // Prophecy already generated during prologue — set it immediately
+    if (prologueProphecy) setProphecy(prologueProphecy);
 
     setQuestsLoading(true);
-    const [q, narr, prop, ident] = await Promise.all([
+    const [q, narr, ident, freshProp] = await Promise.all([
       genQuests(prof, null),
       genNarrative(prof, [], 0, 1),
-      genProphecy(prof),
       genIdentity(prof, [], 0),
+      prologueProphecy ? Promise.resolve(prologueProphecy) : genProphecy(prof),
     ]);
-    setQuests(q); setNarrative(narr); setProphecy(prop); setIdentity(ident);
+    setQuests(q); setNarrative(narr); setIdentity(ident);
+    if (!prologueProphecy) setProphecy(freshProp);
     setQuestsLoading(false);
   }, []);
 
+
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }) }, [msgs, loading]);
 
-  const completeQuest = async (i) => {
+  const completeQuest = async (i, checkboxEl) => {
     if (doneQ.includes(i)) return;
     const q = quests[i];
+    const oldLv = getLevel(xp).lv;
     setDoneQ(d => [...d, i]);
     const newXp = xp + (q.xp || 25);
     setXp(newXp);
@@ -725,6 +845,16 @@ export default function App() {
     const newWins = [...wins, q.title].slice(-12);
     setWins(newWins);
     showToast(q.xp || 25, "Quest Complete");
+    fireBurst(checkboxEl);
+    triggerXpShimmer();
+    // Level-up detection
+    const newLvl = getLevel(newXp);
+    if (newLvl.lv > oldLv) {
+      setTimeout(() => {
+        setLevelUpModal({ name: newLvl.name, lv: newLvl.lv });
+        setTimeout(() => setLevelUpModal(null), 3200);
+      }, 700);
+    }
     // Refresh narrative
     const narr = await genNarrative(profile, newWins, msgCount, streak);
     setNarrative(narr);
@@ -847,14 +977,14 @@ export default function App() {
               <div className="ns-phase" style={{ marginTop: ".5rem" }}>Phase 1 · Building foundations · {lvl.name}</div>
             </div>
 
-            <div className="widget" style={{ "--d": 1 }}>
+            <div className="widget quest-hero" style={{ "--d": 1 }}>
               <div className="w-title" style={{ justifyContent: "space-between" }}>
                 <span style={{ display: "flex", alignItems: "center", gap: ".38rem" }}>
                   <I.Lightning s={10} style={{ color: "var(--gold)" }} /> {mood ? `${mood} Quests` : "Daily Quests"}
                 </span>
                 <button className="qq-reload" onClick={refreshQuests} title="Refresh quests"><I.Refresh s={12} c="currentColor" /></button>
               </div>
-              <div className="mood-row" style={{ marginBottom: "1rem" }}>
+              <div className="mood-row" style={{ marginBottom: "1.1rem" }}>
                 {MOODS.map(m => (
                   <button key={m.l} className={`mood-btn${mood === m.l ? " picked" : ""}`} onClick={() => handleMood(m.l)}>
                     <span className="mood-ico">{m.e}</span>
@@ -872,19 +1002,19 @@ export default function App() {
                       return (
                         <div key={i} className={`qq${isDone ? " done" : ""}`}
                           onClick={() => { if (!isDone) setPendingQ(isPending ? null : i); }}>
-                          <div className="qq-box">
+                          <div className="qq-box" id={`qq-box-${i}`}>
                             {isDone && <I.Check s={10} c="var(--aqua)" />}
                             {isPending && !isDone && <I.Check s={10} c="var(--gold)" />}
                           </div>
                           <div className="qq-body">
                             <div className="qq-title">{q.title}</div>
                             {isPending && !isDone
-                              ? <div style={{ display: "flex", gap: ".45rem", marginTop: ".4rem", alignItems: "center" }}>
-                                <button style={{ background: "var(--aqua)", color: "var(--ink)", border: "none", borderRadius: "5px", padding: ".28rem .7rem", fontSize: ".72rem", fontWeight: 700, cursor: "pointer", fontFamily: "DM Sans,sans-serif" }}
-                                  onClick={e => { e.stopPropagation(); completeQuest(i); setPendingQ(null); }}>
+                              ? <div style={{ display: "flex", gap: ".45rem", marginTop: ".5rem", alignItems: "center" }}>
+                                <button style={{ background: "var(--aqua)", color: "var(--ink)", border: "none", borderRadius: "6px", padding: ".3rem .75rem", fontSize: ".75rem", fontWeight: 700, cursor: "pointer", fontFamily: "DM Sans,sans-serif" }}
+                                  onClick={e => { e.stopPropagation(); completeQuest(i, document.getElementById(`qq-box-${i}`)); setPendingQ(null); }}>
                                   ✓ Mark complete
                                 </button>
-                                <button style={{ background: "none", border: "1px solid var(--line)", color: "var(--dim)", borderRadius: "5px", padding: ".28rem .7rem", fontSize: ".72rem", cursor: "pointer", fontFamily: "DM Sans,sans-serif" }}
+                                <button style={{ background: "none", border: "1px solid var(--line)", color: "var(--dim)", borderRadius: "6px", padding: ".3rem .75rem", fontSize: ".75rem", cursor: "pointer", fontFamily: "DM Sans,sans-serif" }}
                                   onClick={e => { e.stopPropagation(); setPendingQ(null); }}>
                                   Cancel
                                 </button>
@@ -937,7 +1067,10 @@ export default function App() {
               <div className="lvl-badge">LVL {lvl.lv}</div>
               <div className="xp-n">{xp}</div>
               <div style={{ fontSize: ".72rem", color: "var(--dim)", marginTop: ".2rem" }}>total earned</div>
-              <div className="xp-bar" style={{ marginTop: ".75rem" }}><div className="xp-fill" style={{ width: lvl.pct + "%" }} /></div>
+              <div className="xp-bar" style={{ marginTop: ".75rem", position: "relative" }}>
+                <div className="xp-fill" style={{ width: lvl.pct + "%" }} />
+                {xpShimmer && <div className="xp-fill-shimmer" />}
+              </div>
               <div style={{ fontSize: ".68rem", color: "var(--dim)", marginTop: ".3rem" }}>{lvl.toNext} XP → {LEVELS[lvl.lv] || "Legend"}</div>
             </div>
           </div>
@@ -945,7 +1078,7 @@ export default function App() {
           {/* Row 3: Narrative + Prophecy */}
           <div className="w-row w-row-2">
             <div className="widget narr" style={{ "--d": 5 }}>
-              <div className="w-title"><I.Star s={10} style={{ color: "var(--violet)" }} /> Your Story So Far</div>
+              <div className="reflect-label"><I.Star s={11} style={{ color: "var(--violet)", opacity: .7 }} /> Your Story So Far</div>
               <div className="narr-row">
                 <div className="narr-av"><I.Star s={14} style={{ color: "var(--gold)" }} /></div>
                 <div className="narr-msg">{narrative || "PathFinder is reading your journey..."}</div>
@@ -957,7 +1090,7 @@ export default function App() {
             </div>
 
             <div className="widget prop" style={{ "--d": 6 }}>
-              <div className="w-title"><I.Eye s={10} style={{ color: "var(--rose)" }} /> Prophecy — What's Coming</div>
+              <div className="reflect-label"><I.Eye s={11} style={{ color: "var(--rose)", opacity: .7 }} /> Prophecy — What's Coming</div>
               {prophecy
                 ? <><div className="prop-msg">{prophecy}</div><span className="prop-week">Week 2–4 Prediction</span></>
                 : <div style={{ color: "var(--dim)", fontSize: ".8rem", fontStyle: "italic" }}>Analyzing your path...</div>
@@ -1084,6 +1217,37 @@ export default function App() {
 
     {/* XP TOAST */}
     {xpToast && <div className="xpt"><I.Star s={11} style={{ color: "var(--violet)" }} /> +{xpToast.amt} XP · {xpToast.lbl}</div>}
+
+    {/* PARTICLE BURST */}
+    {burst && (
+      <div className="burst-wrap" style={{ left: burst.x, top: burst.y }}>
+        {[...Array(8)].map((_, i) => {
+          const angle = (i / 8) * Math.PI * 2;
+          const dist = 38 + Math.random() * 22;
+          const colors = ["var(--gold)", "var(--aqua)", "var(--violet)", "var(--rose)"];
+          return (
+            <div key={i} className="burst-p" style={{
+              background: colors[i % 4],
+              "--tx": `${Math.cos(angle) * dist}px`,
+              "--ty": `${Math.sin(angle) * dist}px`,
+              animationDelay: `${i * 0.04}s`,
+            }} />
+          );
+        })}
+      </div>
+    )}
+
+    {/* LEVEL-UP MODAL */}
+    {levelUpModal && (
+      <div className="lvlup" onClick={() => setLevelUpModal(null)}>
+        <div className="lvlup-card">
+          <div className="lvlup-star"><I.Star s={64} style={{ color: "var(--gold)" }} /></div>
+          <div className="lvlup-eyebrow">Level Up</div>
+          <div className="lvlup-name">{levelUpModal.name}</div>
+          <div className="lvlup-sub">You've reached Level {levelUpModal.lv}. The path ahead is clearer now.</div>
+        </div>
+      </div>
+    )}
 
     {/* PAYWALL */}
     {
