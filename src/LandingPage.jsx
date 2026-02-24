@@ -578,8 +578,7 @@ export default function LandingPage({ onStart }) {
           </h1>
 
           <p className="hero-subtitle">
-            An intelligent mentor designed to guide you through life's pivotal moments.
-            Whether you are graduating, building a business, or seeking a massive life change—we map the steps so you can walk the path.
+            Your AI-powered life mentor. Set your North Star, get a personalized roadmap, and start showing up as who you're meant to be.
           </p>
 
           <div className="cta-group">

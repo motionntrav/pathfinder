@@ -1,863 +1,1114 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
-// ─────────────────────────────────────────────
-//  CUSTOM SVG ICON LIBRARY
-//  All icons hand-crafted for PathFinder's
-//  night-sky / North Star aesthetic
-// ─────────────────────────────────────────────
-const Icon = {
-  // Spinning north star / logo mark
-  NorthStar: ({ size = 20, className = "", style = {} }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={style}>
-      <path d="M12 2 L13.5 10.5 L22 12 L13.5 13.5 L12 22 L10.5 13.5 L2 12 L10.5 10.5 Z" fill="currentColor" opacity="0.9"/>
-      <path d="M12 5 L12.8 10.8 L18 12 L12.8 13.2 L12 19 L11.2 13.2 L6 12 L11.2 10.8 Z" fill="currentColor"/>
-    </svg>
-  ),
-
-  // Graduation cap — high school grad
-  GradCap: ({ size = 20, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 22 8 12 14 2 8"/>
-      <path d="M6 10.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-6.5"/>
-      <line x1="22" y1="8" x2="22" y2="14"/>
-    </svg>
-  ),
-
-  // Rocket — small business / growth
-  Rocket: ({ size = 20, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2C12 2 7 6 7 13l2 2 3-1 3 1 2-2c0-7-5-11-5-11z"/>
-      <path d="M7 13l-3 3 1 3 3-1"/>
-      <path d="M17 13l3 3-1 3-3-1"/>
-      <circle cx="12" cy="11" r="1.5" fill={color} stroke="none"/>
-    </svg>
-  ),
-
-  // Globe / compass — traveler
-  Globe: ({ size = 20, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9"/>
-      <path d="M12 3c-2.5 3-4 5.5-4 9s1.5 6 4 9"/>
-      <path d="M12 3c2.5 3 4 5.5 4 9s-1.5 6-4 9"/>
-      <line x1="3" y1="12" x2="21" y2="12"/>
-      <line x1="4" y1="8" x2="20" y2="8"/>
-      <line x1="4" y1="16" x2="20" y2="16"/>
-    </svg>
-  ),
-
-  // Dumbbell — fitness
-  Dumbbell: ({ size = 20, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="10" width="3" height="4" rx="1"/>
-      <rect x="5" y="8" width="2.5" height="8" rx="1"/>
-      <line x1="7.5" y1="12" x2="16.5" y2="12"/>
-      <rect x="16.5" y="8" width="2.5" height="8" rx="1"/>
-      <rect x="19" y="10" width="3" height="4" rx="1"/>
-    </svg>
-  ),
-
-  // Stethoscope — nursing / medical
-  Stethoscope: ({ size = 20, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/>
-      <line x1="9" y1="3" x2="9" y2="6"/>
-      <line x1="15" y1="3" x2="15" y2="6"/>
-      <path d="M18 16a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" fill={color} stroke="none" opacity="0.3"/>
-      <path d="M18 14v2"/>
-    </svg>
-  ),
-
-  // Compass — custom / my own path
-  Compass: ({ size = 20, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9"/>
-      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88" fill={color} opacity="0.25" stroke={color} strokeWidth="1.4"/>
-      <circle cx="12" cy="12" r="1.2" fill={color} stroke="none"/>
-    </svg>
-  ),
-
-  // Chat bubble — tab icon
-  Chat: ({ size = 16, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-    </svg>
-  ),
-
-  // Map / scroll — roadmap tab
-  Map: ({ size = 16, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-      <line x1="9" y1="3" x2="9" y2="18"/>
-      <line x1="15" y1="6" x2="15" y2="21"/>
-    </svg>
-  ),
-
-  // Send arrow
-  Send: ({ size = 18, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="22" y1="2" x2="11" y2="13"/>
-      <polygon points="22 2 15 22 11 13 2 9"/>
-    </svg>
-  ),
-
-  // User silhouette — user avatar
-  User: ({ size = 16, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-      <circle cx="12" cy="7" r="4"/>
-    </svg>
-  ),
-
-  // Lock — paywall / pro
-  Lock: ({ size = 20, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-    </svg>
-  ),
-
-  // Lightning bolt — upgrade / pro
-  Lightning: ({ size = 16, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill={color} opacity="0.2"/>
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-    </svg>
-  ),
-
-  // Check — step completed
-  Check: ({ size = 10, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12"/>
-    </svg>
-  ),
-
-  // Arrow right — CTA
-  ArrowRight: ({ size = 14, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="5" y1="12" x2="19" y2="12"/>
-      <polyline points="12 5 19 12 12 19"/>
-    </svg>
-  ),
-
-  // Star / sparkle — best value badge
-  Sparkle: ({ size = 14, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke="none">
-      <path d="M12 2 L13.2 9.8 L21 12 L13.2 14.2 L12 22 L10.8 14.2 L3 12 L10.8 9.8 Z" opacity="0.9"/>
-    </svg>
-  ),
-
-  // Path / route — roadmap section icon
-  Path: ({ size = 28, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.3">
-      <circle cx="5" cy="19" r="3"/>
-      <circle cx="19" cy="5" r="3"/>
-      <path d="M5 16V9a7 7 0 0 1 7-7"/>
-      <path d="M19 8v7a7 7 0 0 1-7 7"/>
-    </svg>
-  ),
-
-  // Spinner (animated)
-  Spinner: ({ size = 16, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round"
-      style={{ animation: "spin-fast 0.7s linear infinite" }}>
-      <circle cx="12" cy="12" r="9" opacity="0.2" stroke={color}/>
-      <path d="M12 3a9 9 0 0 1 9 9"/>
-    </svg>
-  ),
+// ─────────────────────────────────────────────────────────────
+//  ICON LIBRARY
+// ─────────────────────────────────────────────────────────────
+const I = {
+  Star: ({ s = 20, style = {} }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" style={style}><path d="M12 2L13.6 10.4L22 12L13.6 13.6L12 22L10.4 13.6L2 12L10.4 10.4Z" fill="currentColor" opacity=".85" /><path d="M12 5.5L12.8 10.9L17.5 12L12.8 13.1L12 18.5L11.2 13.1L6.5 12L11.2 10.9Z" fill="currentColor" /></svg>,
+  Flame: ({ s = 16, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A5 5 0 0 0 17 12c0-5-7-9-7-9 0 4-3 5-3 8a5 5 0 0 0 1.5 3.5z" fill={c} opacity=".2" /><path d="M8.5 14.5A5 5 0 0 0 17 12c0-5-7-9-7-9 0 4-3 5-3 8a5 5 0 0 0 1.5 3.5z" /></svg>,
+  Map: ({ s = 16, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" /><line x1="9" y1="3" x2="9" y2="18" /><line x1="15" y1="6" x2="15" y2="21" /></svg>,
+  Msg: ({ s = 16, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>,
+  Mirror: ({ s = 16, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="10" rx="6" ry="8" /><path d="M9 18l-2 4" /><path d="M15 18l2 4" /><line x1="7" y1="22" x2="17" y2="22" /></svg>,
+  Lightning: ({ s = 14, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill={c} opacity=".2" /><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>,
+  Check: ({ s = 11, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>,
+  Send: ({ s = 15, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9" /></svg>,
+  User: ({ s = 13, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>,
+  Arrow: ({ s = 13, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>,
+  Crystal: ({ s = 16, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l4 4-4 16-4-16z" fill={c} opacity=".15" /><path d="M12 2l4 4-4 16-4-16z" /><path d="M8 6h8" /></svg>,
+  Eye: ({ s = 14, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>,
+  Refresh: ({ s = 13, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 .49-4" /></svg>,
+  Heart: ({ s = 14, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill={c} opacity=".2" /><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>,
+  GradCap: ({ s = 20, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 22 8 12 14 2 8" /><path d="M6 10.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-6.5" /></svg>,
+  Rocket: ({ s = 20, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C12 2 7 6 7 13l2 2 3-1 3 1 2-2c0-7-5-11-5-11z" /><path d="M7 13l-3 3 1 3 3-1" /><path d="M17 13l3 3-1 3-3-1" /></svg>,
+  Globe: ({ s = 20, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 3c-2.5 3-4 5.5-4 9s1.5 6 4 9" /><path d="M12 3c2.5 3 4 5.5 4 9s-1.5 6-4 9" /><line x1="3" y1="12" x2="21" y2="12" /></svg>,
+  Dumbbell: ({ s = 20, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="10" width="3" height="4" rx="1" /><rect x="5" y="8" width="2.5" height="8" rx="1" /><line x1="7.5" y1="12" x2="16.5" y2="12" /><rect x="16.5" y="8" width="2.5" height="8" rx="1" /><rect x="19" y="10" width="3" height="4" rx="1" /></svg>,
+  Stethoscope: ({ s = 20, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3v7a6 6 0 0 0 12 0V3" /><line x1="9" y1="3" x2="9" y2="6" /><line x1="15" y1="3" x2="15" y2="6" /></svg>,
+  Compass: ({ s = 20, c = "currentColor" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88" fill={c} opacity=".2" stroke={c} strokeWidth="1.4" /></svg>,
 };
 
-// Map persona id → icon component
-const PersonaIcon = ({ id, size = 20, color = "currentColor" }) => {
-  switch (id) {
-    case "highschool": return <Icon.GradCap size={size} color={color} />;
-    case "business":   return <Icon.Rocket size={size} color={color} />;
-    case "traveler":   return <Icon.Globe size={size} color={color} />;
-    case "fitness":    return <Icon.Dumbbell size={size} color={color} />;
-    case "student":    return <Icon.Stethoscope size={size} color={color} />;
-    case "custom":     return <Icon.Compass size={size} color={color} />;
-    default:           return <Icon.NorthStar size={size} />;
-  }
+const PersonaIcon = ({ id, s = 20, c = "currentColor" }) => {
+  const map = { highschool: I.GradCap, business: I.Rocket, traveler: I.Globe, fitness: I.Dumbbell, student: I.Stethoscope, custom: I.Compass };
+  const C = map[id] || I.Compass; return <C s={s} c={c} />;
 };
 
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 //  STYLES
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#04050d;--deep:#090a18;
+  --gold:#e8b84b;--gold2:#f5d06e;--gold-pale:rgba(232,184,75,.1);--gold-glow:rgba(232,184,75,.22);
+  --violet:#9d7ff0;--vp:rgba(157,127,240,.12);
+  --aqua:#5eead4;--aq-pale:rgba(94,234,212,.1);
+  --rose:#f472b6;--rose-pale:rgba(244,114,182,.08);
+  --star:#dde8ff;--dim:#3d4560;
+  --card:rgba(255,255,255,.032);--card2:rgba(255,255,255,.052);--ch:rgba(255,255,255,.06);
+  --line:rgba(255,255,255,.065);--line-gold:rgba(232,184,75,.22);
+}
+html,body{height:100%}
+body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--star);overflow:hidden}
 
-  :root {
-    --night: #05060f;
-    --gold: #f2c94c;
-    --gold-dim: #c9a83c;
-    --gold-pale: rgba(242,201,76,0.1);
-    --star: #e8f0ff;
-    --muted: #6b7280;
-    --card: rgba(255,255,255,0.04);
-    --card-hover: rgba(255,255,255,0.07);
-    --border: rgba(255,255,255,0.08);
-    --border-gold: rgba(242,201,76,0.3);
-  }
+/* ── STARFIELD ── */
+#sf{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 52% 6%,#160e35 0%,#04050d 58%)}
+.s{position:absolute;border-radius:50%;background:#fff;animation:tw var(--d,3s) ease-in-out infinite;opacity:var(--o,.5)}
+@keyframes tw{0%,100%{opacity:var(--o);transform:scale(1)}50%{opacity:.05;transform:scale(.35)}}
 
-  html, body { height: 100%; }
+/* ── ONBOARDING ── */
+.ob{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:2rem;transition:opacity .9s ease}
+.ob.bye{opacity:0;pointer-events:none}
+.ob-step{width:100%;max-width:660px;display:flex;flex-direction:column;align-items:center;text-align:center;animation:up .7s cubic-bezier(.22,1,.36,1) both}
+@keyframes up{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+.ob-step.out{animation:dn .35s ease forwards}
+@keyframes dn{to{opacity:0;transform:translateY(-18px)}}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--night);
-    color: var(--star);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+.ob-dots{position:fixed;top:1.8rem;left:50%;transform:translateX(-50%);display:flex;gap:.4rem;z-index:110}
+.od{width:6px;height:6px;border-radius:50%;background:var(--line);transition:all .4s}
+.od.on{background:var(--gold);width:22px;border-radius:3px}
+.od.was{background:rgba(232,184,75,.35)}
+.ob-back{position:fixed;top:1.5rem;left:1.8rem;z-index:110;background:none;border:none;color:var(--dim);font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:color .2s}
+.ob-back:hover{color:var(--star)}
 
-  #starfield {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background: radial-gradient(ellipse at 60% 10%, #1a1040 0%, #05060f 65%);
-  }
-  .star {
-    position: absolute; border-radius: 50%; background: white;
-    animation: twinkle var(--d, 3s) ease-in-out infinite;
-    opacity: var(--o, 0.6);
-  }
-  @keyframes twinkle {
-    0%,100% { opacity: var(--o,.6); transform: scale(1); }
-    50% { opacity: 0.08; transform: scale(0.5); }
-  }
+.hero-wrap{position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center;margin-bottom:2.5rem}
+.hero-glow{position:absolute;inset:-24px;border-radius:50%;background:radial-gradient(circle,rgba(232,184,75,.15) 0%,transparent 70%);animation:breathe 3.5s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.4);opacity:.3}}
+.hero-ring{position:absolute;border-radius:50%;border:1px solid rgba(232,184,75,.15);animation:breathe 3.5s ease-in-out infinite}
+.hero-ring:nth-child(2){inset:0;animation-delay:0s}
+.hero-ring:nth-child(3){inset:-20px;border-color:rgba(232,184,75,.07);animation-delay:.6s}
+.hero-ring:nth-child(4){inset:-42px;border-color:rgba(232,184,75,.04);animation-delay:1.2s}
+.hero-spin{animation:spin 28s linear infinite;display:flex}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  .app-shell { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.ob-eye{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:1.2rem;opacity:0;animation:up .6s .2s ease both}
+.ob-h{font-family:'Cormorant Garamond',serif;font-size:clamp(2.6rem,6vw,4.4rem);font-weight:700;line-height:1.05;margin-bottom:1.1rem;opacity:0;animation:up .7s .35s ease both;background:linear-gradient(150deg,#fff 0%,#c8d8ff 40%,var(--gold2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ob-sub{font-size:.95rem;color:var(--dim);line-height:1.72;max-width:430px;margin:0 auto 2.5rem;opacity:0;animation:up .7s .5s ease both}
 
-  /* TOPBAR */
-  .topbar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 2rem; height: 62px; flex-shrink: 0;
-    background: rgba(5,6,15,0.85);
-    border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(20px);
-  }
-  .logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.5rem; font-weight: 700; color: var(--gold);
-    display: flex; align-items: center; gap: 0.55rem; letter-spacing: 0.04em;
-  }
-  .logo-star-wrap {
-    animation: spin-slow 25s linear infinite; display: flex; align-items: center; justify-content: center;
-  }
-  @keyframes spin-slow { to { transform: rotate(360deg); } }
-  @keyframes spin-fast { to { transform: rotate(360deg); } }
+.ob-btn{background:var(--gold);color:var(--ink);border:none;padding:.9rem 2.2rem;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.92rem;border-radius:5px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.55rem;opacity:0;animation:up .6s .7s ease both}
+.ob-btn:hover{background:#d4a63e;transform:translateY(-2px);box-shadow:0 8px 32px rgba(232,184,75,.28)}
+.ob-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
 
-  .topbar-right { display: flex; align-items: center; gap: 1rem; }
-  .badge { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em; padding: 0.2rem 0.65rem; border-radius: 999px; text-transform: uppercase; }
-  .badge-free { background: rgba(242,201,76,0.12); color: var(--gold); border: 1px solid var(--border-gold); }
-  .badge-pro { background: var(--gold); color: var(--night); }
-  .upgrade-btn {
-    background: var(--gold); color: var(--night); border: none; padding: 0.5rem 1.1rem;
-    font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem;
-    cursor: pointer; border-radius: 4px; transition: all 0.2s;
-    display: flex; align-items: center; gap: 0.4rem;
-  }
-  .upgrade-btn:hover { background: var(--gold-dim); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(242,201,76,0.3); }
+.ob-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.7rem,4vw,2.5rem);font-weight:600;margin-bottom:.55rem}
+.ob-desc{font-size:.88rem;color:var(--dim);margin-bottom:2.5rem;line-height:1.65}
 
-  /* TABNAV */
-  .tabnav {
-    display: flex; padding: 0 2rem; flex-shrink: 0;
-    background: rgba(5,6,15,0.7); border-bottom: 1px solid var(--border); backdrop-filter: blur(20px);
-  }
-  .tab {
-    padding: 0.85rem 1.5rem; cursor: pointer;
-    font-size: 0.85rem; font-weight: 500; color: var(--muted);
-    border-bottom: 2px solid transparent; margin-bottom: -1px;
-    transition: all 0.2s; background: none;
-    border-top: none; border-left: none; border-right: none;
-    font-family: 'DM Sans', sans-serif;
-    display: flex; align-items: center; gap: 0.5rem;
-  }
-  .tab:hover { color: var(--star); }
-  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
-  .tab.active svg { opacity: 1; }
-  .tab svg { opacity: 0.5; transition: opacity 0.2s; }
-  .tab:hover svg { opacity: 0.8; }
+.c-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem;width:100%;margin-bottom:2rem}
+@media(max-width:500px){.c-grid{grid-template-columns:repeat(2,1fr)}}
+.cc{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1.4rem .9rem;cursor:pointer;transition:all .25s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;align-items:center;gap:.65rem;overflow:hidden;animation:up .5s calc(var(--i,0)*.07s + .1s) ease both}
+.cc::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% -10%,rgba(232,184,75,.07) 0%,transparent 60%);opacity:0;transition:opacity .3s}
+.cc:hover{transform:translateY(-4px);border-color:var(--line-gold)}.cc:hover::before{opacity:1}
+.cc.on{border-color:var(--gold);background:var(--gold-pale);transform:translateY(-4px) scale(1.02);box-shadow:0 0 28px rgba(232,184,75,.12)}.cc.on::before{opacity:1}
+.cc-icon{width:46px;height:46px;border-radius:11px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;transition:all .25s}
+.cc.on .cc-icon{background:var(--gold-pale);border-color:var(--line-gold)}
+.cc-tick{position:absolute;top:.55rem;right:.55rem;width:17px;height:17px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0);transition:all .25s cubic-bezier(.34,1.56,.64,1)}
+.cc.on .cc-tick{opacity:1;transform:scale(1)}
+.cc-lbl{font-size:.78rem;font-weight:600}.cc-sub{font-size:.67rem;color:var(--dim);text-align:center;line-height:1.4}
 
-  /* MAIN */
-  .main { flex: 1; display: flex; overflow: hidden; }
+.sit-list{display:flex;flex-direction:column;gap:.65rem;width:100%;margin-bottom:2rem}
+.sc{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:.95rem 1.15rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.9rem;animation:up .5s calc(var(--i,0)*.07s + .1s) ease both}
+.sc:hover{background:var(--ch);border-color:rgba(255,255,255,.12);transform:translateX(4px)}
+.sc.on{border-color:var(--gold);background:var(--gold-pale)}
+.sc-dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--dim);flex-shrink:0;transition:all .2s}
+.sc.on .sc-dot{background:var(--gold);border-color:var(--gold);box-shadow:0 0 8px var(--gold-glow)}
+.sc-txt{font-size:.87rem;font-style:italic;line-height:1.4}.sc.on .sc-txt{color:rgba(232,184,75,.9)}
 
-  /* SIDEBAR */
-  .sidebar {
-    width: 252px; flex-shrink: 0;
-    background: rgba(5,6,15,0.6); border-right: 1px solid var(--border);
-    backdrop-filter: blur(20px); display: flex; flex-direction: column;
-    overflow-y: auto; padding: 1.25rem 0.85rem; gap: 0.25rem;
-  }
-  .sidebar-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; padding: 0 0.4rem; }
-  .persona-btn {
-    display: flex; align-items: center; gap: 0.75rem;
-    padding: 0.65rem 0.75rem; border-radius: 8px; cursor: pointer;
-    transition: all 0.18s; border: 1px solid transparent;
-    background: none; width: 100%; text-align: left; font-family: 'DM Sans', sans-serif;
-  }
-  .persona-btn:hover { background: var(--card-hover); border-color: var(--border); }
-  .persona-btn.active { background: var(--gold-pale); border-color: var(--border-gold); }
-  .persona-icon-wrap {
-    width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--card); border: 1px solid var(--border);
-    transition: all 0.18s;
-  }
-  .persona-btn.active .persona-icon-wrap { background: var(--gold-pale); border-color: var(--border-gold); }
-  .persona-btn.active .persona-icon-wrap svg { color: var(--gold); stroke: var(--gold); }
-  .persona-text h4 { font-size: 0.8rem; font-weight: 600; color: var(--star); }
-  .persona-text p { font-size: 0.7rem; color: var(--muted); margin-top: 0.1rem; line-height: 1.3; }
-  .sidebar-divider { height: 1px; background: var(--border); margin: 0.75rem 0; flex-shrink: 0; }
-  .msg-counter { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem 0.9rem; margin-top: auto; flex-shrink: 0; }
-  .msg-counter-label { color: var(--muted); font-size: 0.72rem; margin-bottom: 0.4rem; }
-  .counter-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 0.45rem; }
-  .counter-fill { height: 100%; border-radius: 2px; background: var(--gold); transition: width 0.5s ease; }
-  .counter-fill.warn { background: #ef4444; }
-  .counter-nums { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); }
+.goal-wrap{width:100%;margin-bottom:1.75rem}
+.goal-lbl{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:.55rem;text-align:left}
+.goal-inp{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:.95rem 1.15rem;font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;color:var(--star);outline:none;transition:border-color .2s;line-height:1.5;resize:none;caret-color:var(--gold)}
+.goal-inp:focus{border-color:var(--line-gold);box-shadow:0 0 0 3px rgba(232,184,75,.06)}
+.goal-inp::placeholder{color:var(--dim);font-style:italic}
+.goal-hint{text-align:right;font-size:.68rem;color:var(--dim);margin-top:.35rem}
 
-  /* CHAT PANEL */
-  .chat-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
-  .chat-persona-header {
-    display: flex; align-items: center; gap: 0.75rem;
-    padding: 0.9rem 1.5rem; flex-shrink: 0;
-    background: rgba(5,6,15,0.5); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px);
-  }
-  .persona-avatar-lg {
-    width: 40px; height: 40px; border-radius: 10px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid var(--border-gold);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .persona-header-info h3 { font-size: 0.88rem; font-weight: 600; }
-  .persona-header-info p { font-size: 0.72rem; color: var(--muted); }
-  .online-indicator { margin-left: auto; display: flex; align-items: center; gap: 0.4rem; font-size: 0.7rem; color: #4ade80; }
-  .online-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px #4ade80; animation: pulse-dot 2s ease-in-out infinite; }
-  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+.launch-wrap{display:flex;flex-direction:column;align-items:center;gap:1.5rem}
+.launch-star{animation:pulse-star 1s ease-in-out infinite}
+@keyframes pulse-star{0%,100%{transform:scale(1);filter:drop-shadow(0 0 16px rgba(232,184,75,.65))}50%{transform:scale(1.2);filter:drop-shadow(0 0 40px rgba(232,184,75,1))}}
+.launch-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-style:italic}
+.launch-sub{font-size:.8rem;color:var(--dim)}
+.launch-bar{width:220px;height:2px;background:var(--line);border-radius:1px;overflow:hidden}
+.launch-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--violet));border-radius:1px;animation:lfill 2.3s ease forwards}
+@keyframes lfill{from{width:0}to{width:100%}}
 
-  .messages-area { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
-  .messages-area::-webkit-scrollbar { width: 4px; }
-  .messages-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+/* ── APP SHELL ── */
+.shell{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;opacity:0;transition:opacity 1s ease}
+.shell.show{opacity:1}
 
-  .msg-row { display: flex; gap: 0.65rem; align-items: flex-start; animation: rise 0.35s ease; }
-  @keyframes rise { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-  .msg-row.user { flex-direction: row-reverse; }
-  .msg-av {
-    width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    border: 1px solid var(--border);
-  }
-  .msg-av.ai {
-    background: linear-gradient(135deg, rgba(242,201,76,0.25), rgba(167,139,250,0.25));
-    border-color: var(--border-gold);
-  }
-  .msg-av.user { background: rgba(255,255,255,0.06); }
-  .bubble { max-width: 74%; padding: 0.85rem 1.1rem; font-size: 0.88rem; line-height: 1.7; }
-  .msg-row.ai .bubble { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 2px 12px 12px 12px; backdrop-filter: blur(8px); box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
-  .msg-row.user .bubble { background: rgba(242,201,76,0.12); border: 1px solid var(--border-gold); border-radius: 12px 2px 12px 12px; }
+/* TOP BAR */
+.bar{display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:54px;flex-shrink:0;background:rgba(4,5,13,.9);border-bottom:1px solid var(--line);backdrop-filter:blur(20px)}
+.logo{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:var(--gold);display:flex;align-items:center;gap:.5rem;letter-spacing:.04em}
+.logo-spin{animation:spin 24s linear infinite;display:flex}
+.bar-mid{display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--dim);max-width:340px;overflow:hidden}
+.bar-mid strong{color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-right{display:flex;align-items:center;gap:.65rem}
+.pill{border-radius:999px;padding:.18rem .65rem;font-size:.7rem;font-weight:600;display:flex;align-items:center;gap:.3rem;font-family:'DM Mono',monospace}
+.pill-xp{background:var(--vp);border:1px solid rgba(157,127,240,.25);color:var(--violet)}
+.pill-str{background:rgba(232,184,75,.1);border:1px solid rgba(232,184,75,.2);color:var(--gold)}
+.pro-btn{background:var(--gold);color:var(--ink);border:none;padding:.42rem .95rem;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.76rem;border-radius:4px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.32rem}
+.pro-btn:hover{background:#d4a63e;transform:translateY(-1px);box-shadow:0 4px 18px rgba(232,184,75,.3)}
 
-  .typing-indicator { display: flex; gap: 5px; padding: 4px 2px; }
-  .typing-indicator span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: bounce-dot 1.3s infinite; }
-  .typing-indicator span:nth-child(2){animation-delay:.15s}
-  .typing-indicator span:nth-child(3){animation-delay:.3s}
-  @keyframes bounce-dot { 0%,100%{transform:translateY(0);opacity:.4} 50%{transform:translateY(-7px);opacity:1} }
+/* TABS */
+.tabs{display:flex;padding:0 1.5rem;flex-shrink:0;background:rgba(4,5,13,.75);border-bottom:1px solid var(--line);backdrop-filter:blur(20px)}
+.tab{padding:.72rem 1.2rem;cursor:pointer;font-size:.8rem;font-weight:500;color:var(--dim);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:.42rem}
+.tab:hover{color:var(--star)}.tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+.tab svg{opacity:.45;transition:opacity .2s}.tab.on svg,.tab:hover svg{opacity:1}
+.tab-dot{background:var(--gold);color:var(--ink);font-size:.58rem;font-weight:700;border-radius:999px;padding:.08rem .38rem;margin-left:.18rem}
 
-  .chips-row { display: flex; flex-wrap: wrap; gap: 0.45rem; padding: 0 1.5rem 0.75rem; flex-shrink: 0; }
-  .chip { background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 0.3rem 0.85rem; font-size: 0.77rem; color: rgba(255,255,255,0.65); cursor: pointer; transition: all 0.18s; font-family: 'DM Sans', sans-serif; font-weight: 500; }
-  .chip:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-pale); }
+.main{flex:1;overflow:hidden;display:flex}
 
-  .roadmap-ready-banner { margin: 0 1.5rem 0.75rem; background: rgba(242,201,76,0.08); border: 1px solid var(--border-gold); border-radius: 8px; padding: 0.65rem 1rem; font-size: 0.82rem; display: flex; align-items: center; gap: 0.6rem; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
-  .roadmap-ready-banner:hover { background: rgba(242,201,76,0.14); }
-  .roadmap-ready-banner strong { color: var(--gold); }
-  .roadmap-ready-banner .rr-arrow { margin-left: auto; opacity: 0.6; }
+/* ══════════════════════════════════════
+   TRANSFORMATION DASHBOARD
+══════════════════════════════════════ */
+.tboard{flex:1;overflow-y:auto;padding:1.25rem;display:grid;grid-template-columns:repeat(12,1fr);gap:.85rem;align-content:start}
+.tboard::-webkit-scrollbar{width:3px}.tboard::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
 
-  .input-area { display: flex; gap: 0.75rem; align-items: flex-end; padding: 1rem 1.5rem; background: rgba(5,6,15,0.7); border-top: 1px solid var(--border); backdrop-filter: blur(20px); flex-shrink: 0; }
-  .chat-textarea { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: var(--star); outline: none; resize: none; transition: border-color 0.2s; line-height: 1.5; }
-  .chat-textarea:focus { border-color: var(--border-gold); }
-  .chat-textarea::placeholder { color: var(--muted); }
-  .send-btn { background: var(--gold); color: var(--night); border: none; width: 42px; height: 42px; border-radius: 10px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .send-btn:hover:not(:disabled) { background: var(--gold-dim); transform: scale(1.06); box-shadow: 0 4px 20px rgba(242,201,76,0.3); }
-  .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+/* Card base */
+.tc{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:1.1rem 1.2rem;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s;animation:up .5s calc(var(--d,0)*.06s) ease both}
+.tc:hover{border-color:rgba(255,255,255,.1);box-shadow:0 6px 28px rgba(0,0,0,.3)}
+.tc-lbl{font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:.8rem;display:flex;align-items:center;gap:.38rem}
 
-  /* ROADMAP */
-  .roadmap-panel { flex: 1; overflow-y: auto; padding: 2rem; }
-  .roadmap-panel::-webkit-scrollbar { width: 4px; }
-  .roadmap-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+/* Spans */
+.sp8{grid-column:span 8}.sp4{grid-column:span 4}
+.sp6{grid-column:span 6}.sp3{grid-column:span 3}
+.sp5{grid-column:span 5}.sp7{grid-column:span 7}
+.sp12{grid-column:span 12}
+@media(max-width:900px){.sp8,.sp4,.sp6,.sp3,.sp5,.sp7{grid-column:span 12}}
 
-  .roadmap-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: var(--muted); gap: 1rem; padding: 3rem; }
-  .roadmap-empty-icon { animation: float 4s ease-in-out infinite; }
-  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-  .roadmap-empty h3 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--star); }
-  .roadmap-empty p { font-size: 0.88rem; max-width: 320px; line-height: 1.65; }
-  .start-chat-btn { margin-top: 0.5rem; background: var(--gold); color: var(--night); border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.88rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
-  .start-chat-btn:hover { background: var(--gold-dim); transform: translateY(-2px); }
+/* NORTH STAR card */
+.ns{background:linear-gradient(140deg,rgba(232,184,75,.07) 0%,rgba(157,127,240,.04) 100%);border-color:var(--line-gold)}
+.ns::after{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;background:radial-gradient(circle,rgba(232,184,75,.07),transparent 70%);pointer-events:none}
+.ns-quote{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.1rem;line-height:1.6;color:var(--star);margin-bottom:1rem}
+.ns-bar-row{display:flex;align-items:center;gap:.7rem}
+.ns-bar{flex:1;height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.ns-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--violet));border-radius:3px;transition:width 1.2s cubic-bezier(.22,1,.36,1)}
+.ns-pct{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--gold);font-weight:500}
+.ns-phase{font-size:.72rem;color:var(--dim);margin-top:.55rem}
 
-  .roadmap-header { margin-bottom: 2rem; }
-  .roadmap-header h2 { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; margin-bottom: 0.4rem; background: linear-gradient(135deg, var(--star) 0%, var(--gold) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .roadmap-header p { color: var(--muted); font-size: 0.875rem; }
+/* IDENTITY card — the soul of the product */
+.id-card{background:linear-gradient(140deg,rgba(157,127,240,.07) 0%,rgba(94,234,212,.04) 100%);border-color:rgba(157,127,240,.2)}
+.id-card::after{content:'';position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(157,127,240,.07),transparent 70%);pointer-events:none}
+.id-headline{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;line-height:1.6;color:var(--star);margin-bottom:.85rem}
+.id-traits{display:flex;flex-direction:column;gap:.45rem}
+.id-trait{display:flex;align-items:center;gap:.65rem}
+.id-trait-bar{flex:1;height:3px;background:var(--line);border-radius:2px;overflow:hidden}
+.id-trait-fill{height:100%;border-radius:2px;transition:width 1.4s cubic-bezier(.22,1,.36,1)}
+.id-trait-lbl{font-size:.68rem;color:var(--dim);min-width:80px}
+.id-trait-pct{font-size:.68rem;font-family:'DM Mono',monospace;color:var(--dim);min-width:28px;text-align:right}
 
-  .roadmap-phase { margin-bottom: 2.5rem; }
-  .phase-label { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
-  .phase-num { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), #f2994a); color: var(--night); font-weight: 700; font-size: 0.82rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .phase-title { font-weight: 600; font-size: 0.95rem; }
-  .phase-timeline { font-size: 0.7rem; color: var(--muted); background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 0.1rem 0.6rem; margin-left: auto; }
-  .phase-steps { display: flex; flex-direction: column; gap: 0.65rem; padding-left: 2rem; border-left: 1px solid var(--border); margin-left: 13px; }
+/* PROPHECY card */
+.prop{background:linear-gradient(140deg,rgba(244,114,182,.06) 0%,rgba(232,184,75,.04) 100%);border-color:rgba(244,114,182,.18)}
+.prop::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(244,114,182,.06),transparent 70%);pointer-events:none}
+.prop-msg{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.93rem;line-height:1.65;color:var(--star)}
+.prop-week{display:inline-block;margin-top:.6rem;font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--rose);background:var(--rose-pale);border:1px solid rgba(244,114,182,.18);border-radius:4px;padding:.15rem .5rem}
 
-  .step-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem 1rem; display: flex; gap: 0.85rem; align-items: flex-start; transition: all 0.2s; }
-  .step-card:hover { background: var(--card-hover); border-color: rgba(255,255,255,0.12); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-  .step-check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border); flex-shrink: 0; cursor: pointer; transition: all 0.2s; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
-  .step-check:hover { border-color: var(--gold); background: var(--gold-pale); }
-  .step-check.done { background: var(--gold); border-color: var(--gold); }
-  .step-content h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
-  .step-content p { font-size: 0.78rem; color: var(--muted); line-height: 1.55; }
-  .step-tag { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); background: var(--gold-pale); border: 1px solid var(--border-gold); border-radius: 4px; padding: 0.1rem 0.4rem; margin-top: 0.4rem; display: inline-block; }
+/* CONSTELLATION of wins */
+.const-wrap{position:relative;height:160px;overflow:hidden}
+.const-svg{width:100%;height:100%}
+.const-empty{font-size:.8rem;color:var(--dim);font-style:italic;text-align:center;padding-top:2rem}
+.const-counter{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--aqua);line-height:1}
+.const-sub{font-size:.72rem;color:var(--dim);margin-top:.2rem}
 
-  .roadmap-upsell { background: var(--card); border: 1px solid var(--border-gold); border-radius: 12px; padding: 1.5rem; text-align: center; margin-top: 1rem; }
-  .roadmap-upsell-icon { margin: 0 auto 0.75rem; display: flex; justify-content: center; }
-  .roadmap-upsell p { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.1rem; margin-bottom: 0.5rem; }
-  .roadmap-upsell small { color: var(--muted); font-size: 0.8rem; display: block; margin-bottom: 1rem; line-height: 1.5; }
+/* QUANTUM QUESTS */
+.qq-list{display:flex;flex-direction:column;gap:.55rem}
+.qq{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:.8rem .95rem;display:flex;align-items:flex-start;gap:.7rem;cursor:pointer;transition:all .2s}
+.qq:hover{border-color:rgba(255,255,255,.12);background:var(--ch)}
+.qq.done{opacity:.45}
+.qq-box{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;margin-top:1px}
+.qq:hover .qq-box{border-color:var(--gold)}.qq.done .qq-box{background:rgba(94,234,212,.2);border-color:var(--aqua)}
+.qq-body{flex:1}
+.qq-title{font-size:.83rem;font-weight:600;margin-bottom:.18rem;transition:all .2s}.qq.done .qq-title{text-decoration:line-through;color:var(--dim)}
+.qq-why{font-size:.73rem;color:var(--dim);line-height:1.4}
+.qq-meta{display:flex;gap:.4rem;margin-top:.38rem;align-items:center}
+.qq-xp{font-size:.63rem;font-weight:600;font-family:'DM Mono',monospace;color:var(--violet);background:var(--vp);border:1px solid rgba(157,127,240,.2);border-radius:4px;padding:.08rem .38rem}
+.qq-diff{font-size:.63rem;font-weight:600;border-radius:4px;padding:.08rem .38rem}
+.diff-e{color:var(--aqua);background:var(--aq-pale);border:1px solid rgba(94,234,212,.2)}
+.diff-m{color:var(--gold);background:var(--gold-pale);border:1px solid var(--line-gold)}
+.diff-h{color:var(--rose);background:var(--rose-pale);border:1px solid rgba(244,114,182,.2)}
+.qq-mood{font-size:.63rem;color:var(--dim);margin-left:auto;font-style:italic}
+.qq-reload{background:none;border:none;color:var(--dim);cursor:pointer;padding:.15rem;border-radius:4px;transition:all .2s;display:flex;align-items:center}
+.qq-reload:hover{color:var(--gold);background:var(--gold-pale)}
 
-  /* GEN BANNER */
-  .gen-banner { display: flex; align-items: center; gap: 0.75rem; background: rgba(242,201,76,0.08); border: 1px solid var(--border-gold); border-radius: 8px; padding: 0.85rem 1.1rem; margin-bottom: 1.5rem; font-size: 0.85rem; animation: rise 0.3s ease; }
+/* NARRATIVE thread */
+.narr{background:linear-gradient(140deg,rgba(232,184,75,.05) 0%,rgba(157,127,240,.04) 100%);border-color:var(--line-gold)}
+.narr-av{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,rgba(232,184,75,.22),rgba(157,127,240,.22));border:1px solid var(--line-gold);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.narr-row{display:flex;gap:.7rem;align-items:flex-start}
+.narr-msg{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.95rem;line-height:1.7;color:var(--star)}
+.narr-btns{display:flex;gap:.45rem;margin-top:.8rem}
+.narr-btn{background:var(--gold-pale);border:1px solid var(--line-gold);color:var(--gold);border-radius:6px;padding:.38rem .8rem;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.narr-btn:hover{background:rgba(232,184,75,.18)}
+.narr-ghost{background:none;border:1px solid var(--line);color:var(--dim);border-radius:6px;padding:.38rem .8rem;font-size:.75rem;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.narr-ghost:hover{border-color:rgba(255,255,255,.18);color:var(--star)}
 
-  /* PAYWALL */
-  .overlay { position: fixed; inset: 0; background: rgba(5,6,15,0.88); z-index: 500; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-  .paywall-modal { background: #0d0f22; border: 1px solid var(--border-gold); border-radius: 16px; padding: 2.5rem; max-width: 460px; width: 90%; text-align: center; box-shadow: 0 0 80px rgba(242,201,76,0.12); animation: pop-in 0.3s cubic-bezier(0.34,1.56,0.64,1); }
-  @keyframes pop-in { from{opacity:0;transform:scale(0.88)} to{opacity:1;transform:scale(1)} }
-  .paywall-icon-wrap { margin: 0 auto 1.25rem; width: 56px; height: 56px; border-radius: 14px; background: var(--gold-pale); border: 1px solid var(--border-gold); display: flex; align-items: center; justify-content: center; animation: float 3s ease-in-out infinite; }
-  .paywall-modal h2 { font-family: 'Playfair Display', serif; font-size: 1.9rem; margin-bottom: 0.5rem; }
-  .paywall-modal > p { color: var(--muted); font-size: 0.88rem; line-height: 1.65; margin-bottom: 1.75rem; }
-  .plan-cards { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
-  .plan-card { flex: 1; border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--card); }
-  .plan-card:hover { border-color: var(--border-gold); }
-  .plan-card.featured { border-color: var(--gold); background: rgba(242,201,76,0.07); }
-  .plan-best { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.3rem; display: flex; align-items: center; justify-content: center; gap: 0.3rem; }
-  .plan-card h3 { font-size: 0.82rem; font-weight: 600; margin-bottom: 0.3rem; }
-  .plan-price { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--gold); }
-  .plan-price span { font-size: 0.78rem; font-family: 'DM Sans', sans-serif; color: var(--muted); }
-  .plan-features { font-size: 0.72rem; color: var(--muted); margin-top: 0.5rem; line-height: 1.6; }
-  .cta-upgrade { background: var(--gold); color: var(--night); border: none; width: 100%; padding: 0.9rem; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 0.95rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-  .cta-upgrade:hover { background: var(--gold-dim); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(242,201,76,0.3); }
-  .paywall-skip { margin-top: 0.85rem; font-size: 0.78rem; color: var(--muted); cursor: pointer; }
-  .paywall-skip:hover { color: var(--star); }
+/* STREAK */
+.streak-n{font-family:'Cormorant Garamond',serif;font-size:2.6rem;font-weight:700;color:var(--gold);line-height:1}
+.streak-dots{display:flex;gap:.28rem;margin-top:.7rem}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.sdot.lit{background:var(--gold);box-shadow:0 0 6px var(--gold-glow)}
 
-  @media (max-width: 700px) { .sidebar { display: none; } .plan-cards { flex-direction: column; } }
+/* XP */
+.xp-n{font-family:'Cormorant Garamond',serif;font-size:2.6rem;font-weight:700;color:var(--violet);line-height:1}
+.xp-bar{height:3px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:.7rem}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--violet),#818cf8);border-radius:2px;transition:width .9s ease}
+.lvl-badge{position:absolute;top:.9rem;right:.9rem;background:var(--vp);border:1px solid rgba(157,127,240,.25);border-radius:7px;padding:.25rem .55rem;font-size:.65rem;font-weight:700;color:var(--violet);font-family:'DM Mono',monospace}
+
+/* MOOD check-in */
+.mood-row{display:flex;gap:.5rem;justify-content:space-between}
+.mood-btn{flex:1;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:.65rem .4rem;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:.3rem;font-family:'DM Sans',sans-serif}
+.mood-btn:hover{border-color:var(--line-gold);background:var(--gold-pale)}
+.mood-btn.picked{border-color:var(--gold);background:var(--gold-pale)}
+.mood-ico{font-size:1.3rem}
+.mood-lbl{font-size:.62rem;color:var(--dim);font-weight:500}
+.mood-btn.picked .mood-lbl{color:var(--gold)}
+
+/* ══ ROADMAP ══ */
+.rm-view{flex:1;overflow-y:auto;padding:1.5rem}
+.rm-view::-webkit-scrollbar{width:3px}.rm-view::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
+.rm-hd{margin-bottom:1.75rem}
+.rm-hd h2{font-family:'Cormorant Garamond',serif;font-size:1.85rem;font-weight:600;background:linear-gradient(135deg,var(--star) 0%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.rm-hd p{color:var(--dim);font-size:.84rem;margin-top:.3rem}
+.rm-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;color:var(--dim);gap:.9rem;padding:3rem}
+.rm-empty h3{font-family:'Cormorant Garamond',serif;font-size:1.65rem;color:var(--star)}
+.rm-phase{margin-bottom:2.25rem}
+.rph-hd{display:flex;align-items:center;gap:.7rem;margin-bottom:.9rem}
+.rph-n{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#f2994a);color:var(--ink);font-weight:700;font-size:.78rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rph-title{font-weight:600;font-size:.92rem}
+.rph-time{font-size:.68rem;color:var(--dim);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:.08rem .55rem;margin-left:auto}
+.rm-steps{display:flex;flex-direction:column;gap:.55rem;padding-left:1.9rem;border-left:1px solid var(--line);margin-left:12px}
+.rm-step{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:.8rem .95rem;display:flex;gap:.75rem;align-items:flex-start;transition:all .2s}
+.rm-step:hover{background:var(--ch);border-color:rgba(255,255,255,.11)}
+.rm-check{width:19px;height:19px;border-radius:50%;border:1.5px solid var(--line);flex-shrink:0;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.rm-check:hover{border-color:var(--gold);background:var(--gold-pale)}.rm-check.ck{background:var(--gold);border-color:var(--gold)}
+.rm-sc h4{font-size:.83rem;font-weight:600;margin-bottom:.2rem}
+.rm-sc p{font-size:.75rem;color:var(--dim);line-height:1.5}
+.stag{font-size:.61rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);background:var(--gold-pale);border:1px solid var(--line-gold);border-radius:4px;padding:.08rem .38rem;margin-top:.38rem;display:inline-block}
+
+/* ══ MENTOR CHAT ══ */
+.chat-view{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.chat-hd{display:flex;align-items:center;gap:.7rem;padding:.8rem 1.4rem;flex-shrink:0;background:rgba(4,5,13,.55);border-bottom:1px solid var(--line);backdrop-filter:blur(10px)}
+.chat-av{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(232,184,75,.2),rgba(157,127,240,.2));border:1px solid var(--line-gold);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chat-info h3{font-size:.86rem;font-weight:600}
+.chat-info p{font-size:.7rem;color:var(--dim)}
+.online{margin-left:auto;display:flex;align-items:center;gap:.38rem;font-size:.68rem;color:#4ade80}
+.odot{width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 7px #4ade80;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.msgs{flex:1;overflow-y:auto;padding:1.1rem 1.4rem;display:flex;flex-direction:column;gap:.95rem}
+.msgs::-webkit-scrollbar{width:3px}.msgs::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
+.mrow{display:flex;gap:.55rem;align-items:flex-start;animation:up .35s ease}
+.mrow.user{flex-direction:row-reverse}
+.mav{width:29px;height:29px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--line)}
+.mav.ai{background:linear-gradient(135deg,rgba(232,184,75,.18),rgba(157,127,240,.18));border-color:var(--line-gold)}
+.mav.user{background:rgba(255,255,255,.05)}
+.bub{max-width:76%;padding:.78rem .95rem;font-size:.865rem;line-height:1.7}
+.mrow.ai .bub{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:2px 12px 12px 12px;backdrop-filter:blur(8px);box-shadow:0 2px 14px rgba(0,0,0,.25)}
+.mrow.user .bub{background:rgba(232,184,75,.1);border:1px solid var(--line-gold);border-radius:12px 2px 12px 12px}
+.typing{display:flex;gap:5px;padding:4px 2px}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--dim);animation:bd 1.3s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bd{0%,100%{transform:translateY(0);opacity:.35}50%{transform:translateY(-7px);opacity:1}}
+.chips{display:flex;flex-wrap:wrap;gap:.38rem;padding:0 1.4rem .65rem;flex-shrink:0}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:.27rem .78rem;font-size:.74rem;color:rgba(255,255,255,.58);cursor:pointer;transition:all .18s;font-family:'DM Sans',sans-serif;font-weight:500}
+.chip:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-pale)}
+.iarea{display:flex;gap:.6rem;align-items:flex-end;padding:.8rem 1.4rem;background:rgba(4,5,13,.8);border-top:1px solid var(--line);backdrop-filter:blur(20px);flex-shrink:0}
+.ita{flex:1;background:rgba(255,255,255,.048);border:1px solid var(--line);border-radius:10px;padding:.68rem .95rem;font-family:'DM Sans',sans-serif;font-size:.865rem;color:var(--star);outline:none;resize:none;transition:border-color .2s;line-height:1.5}
+.ita:focus{border-color:var(--line-gold)}.ita::placeholder{color:var(--dim)}
+.sbtn{background:var(--gold);color:var(--ink);border:none;width:38px;height:38px;border-radius:9px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sbtn:hover:not(:disabled){background:#d4a63e;transform:scale(1.07);box-shadow:0 4px 18px rgba(232,184,75,.3)}
+.sbtn:disabled{opacity:.28;cursor:not-allowed}
+
+/* XP TOAST */
+.xpt{position:fixed;top:65px;right:1.4rem;z-index:300;background:#0d0e1e;border:1px solid rgba(157,127,240,.28);border-radius:10px;padding:.65rem .95rem;display:flex;align-items:center;gap:.55rem;font-size:.8rem;font-weight:600;color:var(--violet);box-shadow:0 8px 32px rgba(0,0,0,.45);animation:tin .4s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes tin{from{opacity:0;transform:translateX(28px) scale(.9)}to{opacity:1;transform:translateX(0) scale(1)}}
+.xpt.out{animation:tout .3s ease forwards}
+@keyframes tout{to{opacity:0;transform:translateX(18px)}}
+
+/* PAYWALL */
+.overlay{position:fixed;inset:0;background:rgba(4,5,13,.9);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(12px)}
+.pw{background:#0c0d1e;border:1px solid var(--line-gold);border-radius:16px;padding:2.4rem;max-width:450px;width:90%;text-align:center;box-shadow:0 0 80px rgba(232,184,75,.1);animation:popin .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popin{from{opacity:0;transform:scale(.87)}to{opacity:1;transform:scale(1)}}
+.pw-ico{margin:0 auto 1.2rem;width:54px;height:54px;border-radius:14px;background:var(--gold-pale);border:1px solid var(--line-gold);display:flex;align-items:center;justify-content:center}
+.pw h2{font-family:'Cormorant Garamond',serif;font-size:1.9rem;margin-bottom:.45rem}
+.pw>p{color:var(--dim);font-size:.86rem;line-height:1.65;margin-bottom:1.65rem}
+.plans{display:flex;gap:.85rem;margin-bottom:1.4rem}
+.plan{flex:1;border:1px solid var(--line);border-radius:10px;padding:1.1rem .9rem;text-align:center;background:var(--card)}
+.plan.f{border-color:var(--gold);background:var(--gold-pale)}
+.pbest{font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.28rem;display:flex;align-items:center;justify-content:center;gap:.28rem}
+.plan h3{font-size:.8rem;font-weight:600;margin-bottom:.28rem}
+.pprice{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--gold)}
+.pprice span{font-size:.76rem;font-family:'DM Sans',sans-serif;color:var(--dim)}
+.pfeats{font-size:.7rem;color:var(--dim);margin-top:.48rem;line-height:1.6}
+.pw-cta{background:var(--gold);color:var(--ink);border:none;width:100%;padding:.88rem;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.92rem;border-radius:8px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.45rem}
+.pw-cta:hover{background:#d4a63e;transform:translateY(-1px);box-shadow:0 6px 24px rgba(232,184,75,.28)}
+.pw-skip{margin-top:.8rem;font-size:.76rem;color:var(--dim);cursor:pointer}
+.pw-skip:hover{color:var(--star)}
+
+/* BIO STEP */
+.bio-fields{display:flex;flex-direction:column;gap:1.1rem;width:100%;margin-bottom:2rem}
+.bio-field{display:flex;flex-direction:column;gap:.4rem;text-align:left}
+.bio-lbl{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.bio-inp{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:.85rem 1.1rem;font-family:'DM Sans',sans-serif;font-size:.95rem;color:var(--star);outline:none;transition:border-color .2s;caret-color:var(--gold)}
+.bio-inp:focus{border-color:var(--line-gold);box-shadow:0 0 0 3px rgba(232,184,75,.06)}
+.bio-inp::placeholder{color:var(--dim)}
+.age-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.age-pill{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:.6rem .5rem;text-align:center;font-size:.8rem;cursor:pointer;transition:all .2s}
+.age-pill:hover{border-color:var(--line-gold)}
+.age-pill.on{border-color:var(--gold);background:var(--gold-pale);color:var(--gold);font-weight:600}
+
+/* WIDGET DASHBOARD */
+.wboard{flex:1;overflow-y:auto;padding:1.4rem;display:flex;flex-direction:column;gap:1rem}
+.wboard::-webkit-scrollbar{width:3px}.wboard::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
+.w-row{display:grid;gap:1rem}
+.w-row-2{grid-template-columns:1fr 1fr}
+.w-row-3{grid-template-columns:1fr 1fr 1fr}
+.w-row-1{grid-template-columns:1fr}
+@media(max-width:800px){.w-row-2,.w-row-3{grid-template-columns:1fr}}
+.widget{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1.4rem 1.5rem;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s;animation:up .5s calc(var(--d,0)*.08s) ease both}
+.widget:hover{border-color:rgba(255,255,255,.1);box-shadow:0 6px 28px rgba(0,0,0,.3)}
+.w-title{font-size:.65rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:1rem;display:flex;align-items:center;gap:.4rem}
+.w-greeting{font-family:'Cormorant Garamond',serif;font-size:1.45rem;font-weight:600;color:var(--star);margin-bottom:.35rem;line-height:1.2}
+.w-greeting span{color:var(--gold)}
+
+@media(max-width:700px){.plans{flex-direction:column}.bar-mid{display:none}}
 `;
 
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 //  CONSTANTS
-// ─────────────────────────────────────────────
-const FREE_LIMIT = 3;
-
+// ─────────────────────────────────────────────────────────────
+const FREE_LIMIT = 5;
+const LEVELS = ["Wanderer", "Seeker", "Explorer", "Navigator", "Pioneer", "Trailblazer", "Pathfinder", "North Star"];
+const MOODS = [{ e: "😴", l: "Depleted" }, { e: "😐", l: "Neutral" }, { e: "🙂", l: "Okay" }, { e: "⚡", l: "Energized" }, { e: "🔥", l: "On Fire" }];
 const PERSONAS = [
-  { id: "highschool", label: "High School Grad",     sub: "Alternative paths beyond college" },
-  { id: "business",   label: "Small Business Owner", sub: "Leads, growth & systems" },
-  { id: "traveler",   label: "World Traveler",        sub: "Remote income & adventure" },
-  { id: "fitness",    label: "Fitness Journey",       sub: "Build muscle & transform" },
-  { id: "student",    label: "Nursing Student",       sub: "Pass exams, launch career" },
-  { id: "custom",     label: "My Own Path",           sub: "Something unique to me" },
+  { id: "highschool", label: "High School Grad", sub: "Alternative paths beyond college" },
+  { id: "business", label: "Small Business Owner", sub: "Leads, growth & systems" },
+  { id: "traveler", label: "World Traveler", sub: "Remote income & adventure" },
+  { id: "fitness", label: "Fitness Journey", sub: "Build muscle & transform" },
+  { id: "student", label: "Nursing Student", sub: "Pass exams, launch career" },
+  { id: "custom", label: "My Own Path", sub: "Something unique to me" },
 ];
+const PERSONA_DESC = { highschool: "I just graduated and need a different path", business: "I run a business and want to grow it", traveler: "I want to travel the world and live freely", fitness: "I want to transform my body and health", student: "I'm in school and need help succeeding", custom: "My goal is something else entirely" };
+const SITUATIONS = ["I have a dream but have no idea where to begin.", "I know what I want but keep getting in my own way.", "I've started before but always seem to lose momentum.", "I'm ready to commit — I just need a clear plan.", "I feel lost and need help figuring out what I even want."];
 
-const OPENER = {
-  highschool: "Hey! You just crossed one of life's big finish lines — now you're standing at a crossroads with the whole world ahead of you. That's exciting, not scary. I'm here to help you find YOUR path, not the default one society hands you.\n\nSo tell me: when you picture yourself 5 years from now, living a life that actually feels like yours — what does a normal Tuesday look like?",
-  business:   "Welcome! Running your own business takes real courage, and the fact that you're looking to grow tells me you're already thinking like a strategist.\n\nLet's cut straight to it — describe your business: what do you do, who do you serve, and what's your single biggest bottleneck right now?",
-  traveler:   "The world is massive and life is short — I love this goal. Full-time travel isn't just a dream; it's an engineering problem. And we're going to solve it together.\n\nFirst question: do you currently have income that could work remotely, or are we building that piece from scratch?",
-  fitness:    "Let's build something real. Fitness transformation is part science, part psychology — and I'll guide you through both.\n\nBefore we map your plan, tell me honestly: how old are you, what's your current activity level, and what does your goal actually look like to you?",
-  student:    "Nursing school is genuinely hard, and you're doing something that truly matters. Let's make sure you come out the other side confident and credentialed.\n\nTell me: are you preparing for NCLEX, struggling with specific coursework, or trying to manage the overall pressure of the program?",
-  custom:     "I love this — you're not putting yourself in a box, and that's exactly the right instinct. PathFinder works for any goal, any dream, any life situation.\n\nSo tell me: what's the thing you want most right now? Don't filter it. Just say it out loud.",
-};
-
-const CHIPS = {
-  highschool: ["I want to start a business", "I want to travel the world", "I want to learn a trade", "I have no idea what I want"],
-  business:   ["I need more local leads", "Build my online presence", "Automate my operations", "Hire my first employee"],
-  traveler:   ["I have a remote job already", "I need remote income first", "How much money do I need?", "Best starter countries?"],
-  fitness:    ["I'm a complete beginner", "I've been training but stuck", "What should I eat?", "Build me a workout plan"],
-  student:    ["NCLEX prep help", "Struggling with pharmacology", "I need a study schedule", "Managing stress & burnout"],
-  custom:     ["Find my purpose", "Change careers", "Build financial freedom", "Improve my life overall"],
-};
-
-const SYSTEM_PROMPT = (persona) => `You are PathFinder — a warm, direct, deeply insightful life navigator and mentor. Your philosophy: "Follow Your North Star." You help people discover and walk their personal path.
-
-Current user persona: ${persona}
-
-Your approach:
-- Ask powerful, specific questions to understand the person's situation, desires, and obstacles
-- Give concrete, actionable advice — never vague platitudes  
-- Be encouraging but honest; don't sugarcoat hard truths
-- Speak like a trusted mentor who genuinely cares, not a chatbot
-- Use conversational language, short paragraphs
-
-After 3-5 meaningful exchanges where you understand the person's specific goal well, include this block at the END of one response (only once per conversation):
-
----ROADMAP---
-{
-  "title": "Your Path to [Specific Goal]",
-  "subtitle": "A personalized roadmap based on your conversation",
-  "phases": [
-    {
-      "title": "Phase Name",
-      "timeline": "Weeks 1-4",
-      "steps": [
-        { "title": "Specific action step", "detail": "Why this matters and exactly how to do it", "tag": "Action" },
-        { "title": "Another step", "detail": "Explanation here", "tag": "Mindset" }
-      ]
-    }
-  ]
+function getLevel(xp) {
+  const t = [0, 100, 250, 500, 900, 1400, 2100, 3000];
+  let l = 0; for (let i = 0; i < t.length; i++) { if (xp >= t[i]) l = i; }
+  const next = t[l + 1] || t[t.length - 1] + 500, prev = t[l];
+  return { lv: l + 1, name: LEVELS[l] || "Legend", pct: Math.round(((xp - prev) / (next - prev)) * 100), toNext: next - xp };
 }
+
+// ─────────────────────────────────────────────────────────────
+//  CLAUDE
+// ─────────────────────────────────────────────────────────────
+async function ai(messages, system) {
+  const r = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, system, messages })
+  });
+  const d = await r.json();
+  if (d.error) throw new Error(d.error.message);
+  return d.content?.[0]?.text || "";
+}
+
+function parseRm(t) { const m = t.match(/---RM---\s*([\s\S]*?)---END---/); if (!m) return null; try { return JSON.parse(m[1].trim()) } catch { return null } }
+function stripRm(t) { return t.replace(/---RM---[\s\S]*?---END---/g, "").trim() }
+
+async function genQuests(profile, mood) {
+  const moodCtx = mood ? `User's current energy: ${mood}.` : "";
+  const sys = `Generate 3 daily quests for: "${profile.goal}" (${profile.persona}). ${moodCtx}
+${mood === "Depleted" ? "Make them gentle, 5-10 minute tasks." : mood === "On Fire" ? "Make them ambitious and stretching." : "Mix difficulties."}
+Return ONLY JSON array (no markdown): [{"title":"...","why":"1-sentence reason tied to their goal","xp":25,"diff":"easy|medium|hard"}]
+Make them hyper-specific to their goal. Not generic productivity tasks.`;
+  try {
+    const raw = await ai([{ role: "user", content: "Generate quests" }], sys);
+    const m = raw.match(/\[[\s\S]*\]/);
+    if (m) return JSON.parse(m[0]).slice(0, 3);
+  } catch { }
+  return [{ title: "Write down your #1 obstacle", why: "Naming it is the first step to defeating it", xp: 25, diff: "easy" }, { title: "Do one thing toward your goal", why: "1% progress daily compounds massively", xp: 35, diff: "medium" }, { title: "Find someone who's done it", why: "Their path is your map — 20 minutes of research", xp: 50, diff: "hard" }];
+}
+
+async function genNarrative(profile, wins, msgCount, streak) {
+  const sys = `You are PathFinder. Write ONE short mentor narrative (2-3 sentences) for someone whose goal is: "${profile.goal}". 
+They have: ${wins.length} wins, ${streak} day streak, ${msgCount} mentor conversations.
+${wins.length > 0 ? `Their recent wins: ${wins.slice(-3).join(", ")}.` : "They haven't completed any quests yet."}
+Connect dots. Reference their actual progress. Make it feel like you've been watching them. Be specific, not generic. Sound like a mentor who's proud but still pushing.`;
+  try { return await ai([{ role: "user", content: "Generate narrative" }], sys); }
+  catch { return `You set your sights on something real. Every conversation here is you choosing your future over your comfort — and that's already more than most people ever do.`; }
+}
+
+async function genProphecy(profile) {
+  const sys = `You are a prescient life coach. For someone pursuing: "${profile.goal}" as a ${profile.persona}.
+Write one short prophecy/prediction (2-3 sentences). Predict a SPECIFIC challenge they'll face around week 2-4, AND tell them exactly what it will feel like AND what to do when it hits. Be eerily accurate and specific. Not generic motivation.`;
+  try { return await ai([{ role: "user", content: "Generate prophecy" }], sys); }
+  catch { return `Around week three, you'll wake up one morning and the goal will feel distant — like a story you told yourself. That's not failure. That's the moment where everyone else quits and you don't.`; }
+}
+
+async function genIdentity(profile, wins, msgCount) {
+  const sys = `For someone pursuing "${profile.goal}", generate identity trait scores (0-100) showing who they're BECOMING.
+Return ONLY JSON (no markdown): {"headline":"You're becoming someone who...(complete in 8 words max)","traits":[{"label":"Consistency","score":number},{"label":"Courage","score":number},{"label":"Clarity","score":number},{"label":"Momentum","score":number}]}
+Base scores on: ${wins.length} wins, ${msgCount} conversations. Be encouraging but honest. Early stage = lower scores.`;
+  try {
+    const raw = await ai([{ role: "user", content: "Generate identity" }], sys);
+    const m = raw.match(/\{[\s\S]*\}/); if (m) return JSON.parse(m[0]);
+  } catch { }
+  return { headline: "You're becoming someone who chooses action", traits: [{ label: "Consistency", score: 15 }, { label: "Courage", score: 30 }, { label: "Clarity", score: 45 }, { label: "Momentum", score: 20 }] };
+}
+
+const MENTOR_SYS = (p) => `You are PathFinder — a razor-sharp, deeply perceptive life transformation mentor. NOT a general AI.
+
+User's North Star: "${p?.goal || ""}"
+Persona: ${p?.persona || ""}
+Situation: ${p?.situation || ""}
+
+You are NOT here to answer questions. You are here to transform this person.
+- Reference their specific goal in every response
+- Ask questions that make them uncomfortable in the right way
+- Celebrate progress, challenge stagnation
+- Connect patterns: "Three messages ago you said X, now you're saying Y..."
+- Be direct. Be specific. Be the mentor they can't afford to hire.
+
+After 3+ real exchanges, generate their roadmap:
+---RM---
+{"title":"Your Path to [specific goal]","subtitle":"Built from your conversations","phases":[{"title":"...","timeline":"...","steps":[{"title":"...","detail":"...","tag":"Action|Mindset|Skill|Habit|Financial|Health|Network"}]}]}
 ---END---
 
-Valid tags: Action, Mindset, Resource, Skill, Habit, Financial, Health, Network
-Keep responses concise (2-4 short paragraphs). Be the mentor they never had.`;
+2-4 paragraphs max. No platitudes. No filler.`;
 
-async function callClaude(messages, persona) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system: SYSTEM_PROMPT(persona),
-      messages,
-    }),
+// ─────────────────────────────────────────────────────────────
+//  CONSTELLATION SVG
+// ─────────────────────────────────────────────────────────────
+function Constellation({ wins }) {
+  const W = 280, H = 150;
+  if (!wins.length) return <div className="const-empty">Complete quests — watch your constellation grow</div>;
+  const pts = wins.map((_, i) => {
+    const seed = i * 137.5;
+    return { x: 20 + (Math.sin(seed) * 0.5 + 0.5) * (W - 40), y: 15 + (Math.cos(seed * 1.3) * 0.5 + 0.5) * (H - 30) };
   });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data.content?.[0]?.text || "Something went wrong. Please try again.";
+  return (
+    <svg className="const-svg" viewBox={`0 0 ${W} ${H}`}>
+      <defs>
+        <radialGradient id="sg" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#5eead4" stopOpacity="1" />
+          <stop offset="100%" stopColor="#5eead4" stopOpacity="0" />
+        </radialGradient>
+        <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+      </defs>
+      {pts.slice(1).map((p, i) => (
+        <line key={i} x1={pts[i].x} y1={pts[i].y} x2={p.x} y2={p.y}
+          stroke="rgba(94,234,212,0.18)" strokeWidth="1"
+          strokeDasharray={`${Math.hypot(p.x - pts[i].x, p.y - pts[i].y)}`}
+          style={{ animation: `draw-line 1s ${i * 0.15}s ease forwards`, strokeDashoffset: `${Math.hypot(p.x - pts[i].x, p.y - pts[i].y)}` }}
+        />
+      ))}
+      {pts.map((p, i) => (
+        <g key={i} filter="url(#glow)" style={{ animation: `star-pop .5s ${i * 0.12}s cubic-bezier(.34,1.56,.64,1) both` }}>
+          <circle cx={p.x} cy={p.y} r="6" fill="url(#sg)" opacity=".3" />
+          <circle cx={p.x} cy={p.y} r="2.5" fill="#5eead4" />
+          <title>{wins[i]}</title>
+        </g>
+      ))}
+    </svg>
+  );
 }
 
-function parseRoadmap(text) {
-  const m = text.match(/---ROADMAP---\s*([\s\S]*?)---END---/);
-  if (!m) return null;
-  try { return JSON.parse(m[1].trim()); } catch { return null; }
-}
-function stripRoadmap(text) {
-  return text.replace(/---ROADMAP---[\s\S]*?---END---/g, "").trim();
-}
-
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 //  STARFIELD
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 function Starfield() {
-  const ref = useRef(null);
+  const r = useRef(null);
   useEffect(() => {
-    if (!ref.current) return;
-    const frag = document.createDocumentFragment();
-    for (let i = 0; i < 200; i++) {
-      const s = document.createElement("div");
-      s.className = "star";
-      const size = Math.random() * 2.5 + 0.4;
-      s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;width:${size}px;height:${size}px;--o:${(Math.random()*.7+.1).toFixed(2)};--d:${(Math.random()*4+2).toFixed(1)}s;animation-delay:${(Math.random()*6).toFixed(1)}s;`;
-      frag.appendChild(s);
+    if (!r.current) return;
+    const f = document.createDocumentFragment();
+    for (let i = 0; i < 240; i++) {
+      const s = document.createElement("div"); s.className = "s";
+      const sz = Math.random() * 2.4 + .35;
+      s.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;width:${sz}px;height:${sz}px;--o:${(Math.random() * .65 + .08).toFixed(2)};--d:${(Math.random() * 4 + 2).toFixed(1)}s;animation-delay:${(Math.random() * 7).toFixed(1)}s`;
+      f.appendChild(s);
     }
-    ref.current.appendChild(frag);
+    r.current.appendChild(f);
   }, []);
-  return <div id="starfield" ref={ref} />;
+  return <div id="sf" ref={r} />;
 }
 
-// ─────────────────────────────────────────────
-//  APP
-// ─────────────────────────────────────────────
-export default function PathFinderApp() {
-  const [activeTab,    setActiveTab]    = useState("chat");
-  const [persona,      setPersona]      = useState("highschool");
-  const [messages,     setMessages]     = useState([]);
-  const [input,        setInput]        = useState("");
-  const [loading,      setLoading]      = useState(false);
-  const [msgCount,     setMsgCount]     = useState(0);
-  const [isPro,        setIsPro]        = useState(false);
-  const [showPaywall,  setShowPaywall]  = useState(false);
-  const [roadmap,      setRoadmap]      = useState(null);
-  const [generatingRM, setGeneratingRM] = useState(false);
-  const [checked,      setChecked]      = useState({});
-  const endRef      = useRef(null);
-  const textareaRef = useRef(null);
+// ─────────────────────────────────────────────────────────────
+//  ONBOARDING
+// ─────────────────────────────────────────────────────────────
+function Onboarding({ onDone }) {
+  const [step, setStep] = useState(1);
+  const [out, setOut] = useState(false);
+  const [persona, setPersona] = useState(null);
+  const [sit, setSit] = useState(null);
+  const [goal, setGoal] = useState("");
 
-  useEffect(() => {
-    setMessages([{ role: "ai", content: OPENER[persona] }]);
-    setRoadmap(null); setMsgCount(0); setChecked({});
-  }, [persona]);
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
+  const next = () => { setOut(true); setTimeout(() => { setOut(false); setStep(s => s + 1) }, 360) };
+  const back = () => { setOut(true); setTimeout(() => { setOut(false); setStep(s => s - 1) }, 300) };
+  const launch = () => { setStep(6); setTimeout(() => onDone({ persona, situation: sit, goal, name: name.trim(), age }), 2500) };
+
+  return (
+    <div className="ob">
+      {step > 1 && step < 6 && <button className="ob-back" onClick={back}>← Back</button>}
+      {step < 6 && <div className="ob-dots">{[1, 2, 3, 4, 5].map(i => <div key={i} className={`od ${step === i ? "on" : step > i ? "was" : ""}`} />)}</div>}
+      <div className={`ob-step${out ? " out" : ""}`} key={step}>
+
+        {step === 1 && (<>
+          <div className="hero-wrap">
+            <div className="hero-ring" /><div className="hero-ring" /><div className="hero-ring" />
+            <div className="hero-glow" />
+            <div className="hero-spin"><I.Star s={60} style={{ color: "var(--gold)" }} /></div>
+          </div>
+          <div className="ob-eye">Your life transformation engine</div>
+          <h1 className="ob-h">Follow Your<br />North Star</h1>
+          <p className="ob-sub">Your personal transformation engine. Track who you're becoming, predict what'll stop you, generate daily missions from your energy, and connect the dots of your progress into a story only you can live.</p>
+          <button className="ob-btn" style={{ margin: "0 auto" }} onClick={next}>Begin My Transformation <I.Arrow s={13} c="var(--ink)" /></button>
+        </>)}
+
+        {step === 2 && (<>
+          <I.User s={36} c="var(--gold)" />
+          <h2 className="ob-title" style={{ marginTop: "1rem" }}>Let's get to know you</h2>
+          <p className="ob-desc">A few quick things so PathFinder can personalize everything just for you.</p>
+          <div className="bio-fields">
+            <div className="bio-field">
+              <span className="bio-lbl">Your first name</span>
+              <input className="bio-inp" placeholder="e.g. Travis" value={name} autoFocus
+                onChange={e => setName(e.target.value.slice(0, 40))}
+                onKeyDown={e => { if (e.key === "Enter" && name.trim().length >= 2) next(); }}
+              />
+            </div>
+            <div className="bio-field">
+              <span className="bio-lbl">Age range <span style={{ opacity: .5 }}>(optional)</span></span>
+              <div className="age-grid">
+                {["Under 18", "18–24", "25–34", "35–44", "45+"].map(a => (
+                  <div key={a} className={`age-pill${age === a ? " on" : ""}`} onClick={() => setAge(a)}>{a}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <button className="ob-btn" style={{ margin: "0 auto", opacity: name.trim().length >= 2 ? 1 : .32, cursor: name.trim().length >= 2 ? "pointer" : "not-allowed" }}
+            disabled={name.trim().length < 2} onClick={next}>
+            Nice to meet you, {name || "..."} <I.Arrow s={13} c="var(--ink)" />
+          </button>
+        </>)}
+
+        {step === 3 && (<>
+          <h2 className="ob-title">What calls to you?</h2>
+          <p className="ob-desc">PathFinder personalizes everything — quests, roadmap, mentor voice — around your path.</p>
+          <div className="c-grid">
+            {PERSONAS.map((p, i) => (
+              <div key={p.id} className={`cc${persona === p.id ? " on" : ""}`} style={{ "--i": i }} onClick={() => setPersona(p.id)}>
+                <div className="cc-tick"><I.Check s={9} c="var(--ink)" /></div>
+                <div className="cc-icon"><PersonaIcon id={p.id} s={21} c={persona === p.id ? "var(--gold)" : "var(--star)"} /></div>
+                <div className="cc-lbl">{p.label}</div>
+                <div className="cc-sub">{PERSONA_DESC[p.id]}</div>
+              </div>
+            ))}
+          </div>
+          <button className="ob-btn" style={{ margin: "0 auto", opacity: persona ? 1 : .32, cursor: persona ? "pointer" : "not-allowed" }} disabled={!persona} onClick={next}>
+            This is my path <I.Arrow s={13} c="var(--ink)" />
+          </button>
+        </>)}
+
+        {step === 4 && (<>
+          <h2 className="ob-title">Where are you right now?</h2>
+          <p className="ob-desc">PathFinder meets you exactly here — no judgment, just precision.</p>
+          <div className="sit-list">
+            {SITUATIONS.map((s, i) => (
+              <div key={i} className={`sc${sit === s ? " on" : ""}`} style={{ "--i": i }} onClick={() => setSit(s)}>
+                <div className="sc-dot" /><div className="sc-txt">"{s}"</div>
+              </div>
+            ))}
+          </div>
+          <button className="ob-btn" style={{ margin: "0 auto", opacity: sit ? 1 : .32, cursor: sit ? "pointer" : "not-allowed" }} disabled={!sit} onClick={next}>
+            That's me <I.Arrow s={13} c="var(--ink)" />
+          </button>
+        </>)}
+
+        {step === 5 && (<>
+          <div style={{ marginBottom: ".8rem" }}><I.Star s={42} style={{ color: "var(--gold)", filter: "drop-shadow(0 0 16px rgba(232,184,75,.55))" }} /></div>
+          <h2 className="ob-title">Name your North Star</h2>
+          <p className="ob-desc">One honest sentence. This becomes the soul of your entire PathFinder experience — every quest, every insight, every roadmap milestone will orbit it.</p>
+          <div className="goal-wrap">
+            <div className="goal-lbl">My North Star goal</div>
+            <textarea className="goal-inp" rows={3} autoFocus
+              placeholder="e.g. I want to build a business that lets me work from anywhere in the world..."
+              value={goal} onChange={e => setGoal(e.target.value.slice(0, 200))}
+              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && goal.trim().length > 10) { e.preventDefault(); launch() } }}
+            />
+            <div className="goal-hint">{goal.length} / 200</div>
+          </div>
+          <button className="ob-btn" style={{ margin: "0 auto", opacity: goal.trim().length >= 10 ? 1 : .32, cursor: goal.trim().length >= 10 ? "pointer" : "not-allowed" }}
+            disabled={goal.trim().length < 10} onClick={launch}>
+            <I.Star s={15} style={{ color: "var(--ink)" }} /> Set My North Star
+          </button>
+        </>)}
+
+        {step === 6 && (
+          <div className="launch-wrap">
+            <div className="launch-star"><I.Star s={70} style={{ color: "var(--gold)" }} /></div>
+            <div className="launch-title">Building your transformation engine...</div>
+            <div className="launch-sub">Generating quests • Crafting your prophecy • Mapping your path</div>
+            <div className="launch-bar"><div className="launch-fill" /></div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+//  MAIN APP
+// ─────────────────────────────────────────────────────────────
+export default function App() {
+  const [boarded, setBoarded] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [show, setShow] = useState(false);
+
+  const [tab, setTab] = useState("dashboard");
+  const [msgs, setMsgs] = useState([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [msgCount, setMsgCount] = useState(0);
+  const [isPro, setIsPro] = useState(false);
+  const [showPW, setShowPW] = useState(false);
+  const [roadmap, setRoadmap] = useState(null);
+  const [rmCk, setRmCk] = useState({});
+
+  // Life OS
+  const [xp, setXp] = useState(0);
+  const [streak] = useState(1);
+  const [quests, setQuests] = useState([]);
+  const [doneQ, setDoneQ] = useState([]);
+  const [wins, setWins] = useState([]);
+  const [progress, setProgress] = useState(8);
+  const [narrative, setNarrative] = useState("");
+  const [prophecy, setProphecy] = useState("");
+  const [identity, setIdentity] = useState(null);
+  const [mood, setMood] = useState(null);
+  const [pendingQ, setPendingQ] = useState(null);
+  const [questsLoading, setQuestsLoading] = useState(false);
+  const [xpToast, setXpToast] = useState(null);
+  const toastTimer = useRef(null);
+  const endRef = useRef(null);
+  const taRef = useRef(null);
+
+  const showToast = (amt, lbl) => {
+    setXpToast({ amt, lbl });
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setXpToast(null), 2800);
+  };
+
+  const handleDone = useCallback(async ({ persona, situation, goal, name, age }) => {
+    const prof = { persona, situation, goal, name, age };
+    setProfile(prof);
+    const greet = name ? `Hey ${name}` : "Hello";
+    setMsgs([{ role: "ai", content: `${greet} — you've named your North Star: *"${goal}"*\n\nThat took courage. Most people never say it out loud. I'm not here to give you information; I'm here to help you become the version of yourself who actually lives that goal.\n\nBefore I map your path, tell me something real: what have you already tried? And what stopped you?` }]);
+    setBoarded(true);
+    setTimeout(() => setShow(true), 80);
+
+    setQuestsLoading(true);
+    const [q, narr, prop, ident] = await Promise.all([
+      genQuests(prof, null),
+      genNarrative(prof, [], 0, 1),
+      genProphecy(prof),
+      genIdentity(prof, [], 0),
+    ]);
+    setQuests(q); setNarrative(narr); setProphecy(prop); setIdentity(ident);
+    setQuestsLoading(false);
+  }, []);
+
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }) }, [msgs, loading]);
+
+  const completeQuest = async (i) => {
+    if (doneQ.includes(i)) return;
+    const q = quests[i];
+    setDoneQ(d => [...d, i]);
+    const newXp = xp + (q.xp || 25);
+    setXp(newXp);
+    setProgress(p => Math.min(p + 7, 94));
+    const newWins = [...wins, q.title].slice(-12);
+    setWins(newWins);
+    showToast(q.xp || 25, "Quest Complete");
+    // Refresh narrative
+    const narr = await genNarrative(profile, newWins, msgCount, streak);
+    setNarrative(narr);
+    // Refresh identity
+    const ident = await genIdentity(profile, newWins, msgCount);
+    setIdentity(ident);
+  };
+
+  const handleMood = async (m) => {
+    setMood(m);
+    setDoneQ([]);
+    setPendingQ(null);
+    setQuestsLoading(true);
+    const q = await genQuests(profile, m);
+    setQuests(q);
+    setQuestsLoading(false);
+    showToast(5, "Mood Check-in");
+  };
+
+  const refreshQuests = async () => {
+    setDoneQ([]); setPendingQ(null); setQuestsLoading(true);
+    const q = await genQuests(profile, mood);
+    setQuests(q); setQuestsLoading(false);
+  };
 
   const blocked = !isPro && msgCount >= FREE_LIMIT;
 
   const doSend = async (text) => {
     const msg = (text || input).trim();
     if (!msg || loading) return;
-    if (blocked) { setShowPaywall(true); return; }
-
-    setInput("");
-    if (textareaRef.current) textareaRef.current.style.height = "auto";
-
-    const userMsg = { role: "user", content: msg };
-    const history = [...messages, userMsg];
-    setMessages([...history, { role: "ai", content: null }]);
+    if (blocked) { setShowPW(true); return; }
+    setInput(""); if (taRef.current) taRef.current.style.height = "auto";
+    const um = { role: "user", content: msg };
+    const hist = [...msgs, um];
+    setMsgs([...hist, { role: "ai", content: null }]);
     setLoading(true);
-
-    const apiMsgs = history.map(m => ({
-      role: m.role === "ai" ? "assistant" : "user",
-      content: m.content,
-    }));
-
+    const apiMsgs = hist.map(m => ({ role: m.role === "ai" ? "assistant" : "user", content: m.content }));
     try {
-      const reply = await callClaude(apiMsgs, persona);
-      const newRM = parseRoadmap(reply);
-      const clean = stripRoadmap(reply);
-      if (newRM) { setRoadmap(newRM); setGeneratingRM(true); setTimeout(() => setGeneratingRM(false), 2200); }
-      setMessages([...history, { role: "ai", content: clean }]);
-      setMsgCount(c => c + 1);
-    } catch (err) {
-      setMessages([...history, { role: "ai", content: `Error: ${err.message}` }]);
+      const reply = await ai(apiMsgs, MENTOR_SYS(profile));
+      const rm = parseRm(reply); const clean = stripRm(reply);
+      if (rm) setRoadmap(rm);
+      setMsgs([...hist, { role: "ai", content: clean }]);
+      const nc = msgCount + 1; setMsgCount(nc);
+      setXp(x => x + 10); setProgress(p => Math.min(p + 2, 94));
+      showToast(10, "Conversation XP");
+      // update narrative every 2 messages
+      if (nc % 2 === 0) {
+        const narr = await genNarrative(profile, wins, nc, streak);
+        setNarrative(narr);
+      }
+    } catch (e) {
+      setMsgs([...hist, { role: "ai", content: `Error: ${e.message}` }]);
     } finally { setLoading(false); }
   };
 
-  const handleKey = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); doSend(); } };
-  const autoResize = (e) => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 130) + "px"; };
-  const toggleStep = (pi, si) => { const k = `${pi}-${si}`; setChecked(p => ({...p, [k]: !p[k]})); };
+  const hk = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); doSend(); } };
+  const ar = (e) => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 130) + "px"; };
+  const toggleRm = (pi, si) => { const k = `${pi}-${si}`; setRmCk(p => ({ ...p, [k]: !p[k] })); if (!rmCk[`${pi}-${si}`]) { setXp(x => x + 15); setProgress(p => Math.min(p + 3, 94)); showToast(15, "Milestone"); } };
 
-  const currentP = PERSONAS.find(p => p.id === persona);
-  const pct = Math.min((msgCount / FREE_LIMIT) * 100, 100);
+  const lvl = getLevel(xp);
+  const traitColors = ["var(--aqua)", "var(--rose)", "var(--gold)", "var(--violet)"];
 
-  return (
-    <>
-      <style>{css}</style>
-      <Starfield />
-      <div className="app-shell">
+  return (<>
+    <style>{css}
+      {`@keyframes draw-line{to{stroke-dashoffset:0}}
+        @keyframes star-pop{from{opacity:0;transform:scale(0)}to{opacity:1;transform:scale(1)}}`}
+    </style>
+    <Starfield />
 
-        {/* ── TOPBAR ── */}
-        <header className="topbar">
-          <div className="logo">
-            <span className="logo-star-wrap">
-              <Icon.NorthStar size={22} style={{ color: "var(--gold)" }} />
-            </span>
-            PathFinder
-          </div>
-          <div className="topbar-right">
-            <span className={`badge ${isPro ? "badge-pro" : "badge-free"}`}>{isPro ? "Pro" : "Free"}</span>
-            {!isPro && (
-              <button className="upgrade-btn" onClick={() => setShowPaywall(true)}>
-                <Icon.Lightning size={13} color="var(--night)" />
-                Upgrade to Pro
-              </button>
-            )}
-          </div>
-        </header>
+    {!boarded && <Onboarding onDone={handleDone} />}
 
-        {/* ── TABS ── */}
-        <nav className="tabnav">
-          <button className={`tab ${activeTab==="chat"?"active":""}`} onClick={() => setActiveTab("chat")}>
-            <Icon.Chat size={15} color={activeTab==="chat" ? "var(--gold)" : "currentColor"} />
-            Chat with PathFinder
-          </button>
-          <button className={`tab ${activeTab==="roadmap"?"active":""}`} onClick={() => setActiveTab("roadmap")}>
-            <Icon.Map size={15} color={activeTab==="roadmap" ? "var(--gold)" : "currentColor"} />
-            My Roadmap {roadmap && <Icon.NorthStar size={10} style={{ color:"var(--gold)", marginLeft:2 }} />}
-          </button>
-        </nav>
+    <div className={`shell${show ? " show" : ""}`}>
 
-        <div className="main">
+      {/* TOP BAR */}
+      <header className="bar">
+        <div className="logo">
+          <span className="logo-spin"><I.Star s={19} style={{ color: "var(--gold)" }} /></span>
+          PathFinder
+        </div>
+        {profile?.name && <div className="bar-mid">
+          <I.Star s={10} style={{ color: "var(--gold)", flexShrink: 0 }} />
+          <strong>Hey, {profile.name}</strong>
+        </div>}
+        <div className="bar-right">
+          <div className="pill pill-xp"><I.Star s={9} style={{ color: "var(--violet)" }} />{xp} XP</div>
+          <div className="pill pill-str"><I.Flame s={10} c="var(--gold)" />{streak}d</div>
+          {!isPro && <button className="pro-btn" onClick={() => setShowPW(true)}><I.Lightning s={12} c="var(--ink)" />Pro</button>}
+        </div>
+      </header>
 
-          {/* ── SIDEBAR ── */}
-          <aside className="sidebar">
-            <div className="sidebar-label">Your Situation</div>
-            {PERSONAS.map(p => (
-              <button key={p.id} className={`persona-btn ${persona===p.id?"active":""}`}
-                onClick={() => { setPersona(p.id); setActiveTab("chat"); }}>
-                <div className="persona-icon-wrap">
-                  <PersonaIcon id={p.id} size={17} color={persona===p.id ? "var(--gold)" : "var(--muted)"} />
-                </div>
-                <div className="persona-text"><h4>{p.label}</h4><p>{p.sub}</p></div>
-              </button>
-            ))}
-            <div className="sidebar-divider" />
-            {!isPro && (
-              <div className="msg-counter">
-                <div className="msg-counter-label">Free messages used</div>
-                <div className="counter-bar">
-                  <div className={`counter-fill ${pct>=100?"warn":""}`} style={{ width: pct+"%" }} />
-                </div>
-                <div className="counter-nums">
-                  <span>{msgCount} / {FREE_LIMIT}</span>
-                  <span style={{ color: blocked?"#ef4444":"inherit" }}>
-                    {blocked ? "Upgrade to continue" : `${FREE_LIMIT - msgCount} left`}
-                  </span>
-                </div>
+      {/* TABS */}
+      <nav className="tabs">
+        <button className={`tab${tab === "dashboard" ? " on" : ""}`} onClick={() => setTab("dashboard")}>
+          <I.Mirror s={14} c={tab === "dashboard" ? "var(--gold)" : "currentColor"} /> Transformation
+        </button>
+        <button className={`tab${tab === "roadmap" ? " on" : ""}`} onClick={() => setTab("roadmap")}>
+          <I.Map s={14} c={tab === "roadmap" ? "var(--gold)" : "currentColor"} /> Roadmap
+          {roadmap && <span className="tab-dot">✦</span>}
+        </button>
+        <button className={`tab${tab === "chat" ? " on" : ""}`} onClick={() => setTab("chat")}>
+          <I.Msg s={14} c={tab === "chat" ? "var(--gold)" : "currentColor"} /> Mentor
+        </button>
+      </nav>
+
+      <div className="main">
+
+        {/* ══════════ TRANSFORMATION DASHBOARD ══════════ */}
+        {tab === "dashboard" && <div className="wboard">
+
+          {/* Row 1: North Star + Daily Quests */}
+          <div className="w-row w-row-2">
+            <div className="widget ns" style={{ "--d": 0 }}>
+              <div className="w-title"><I.Star s={10} style={{ color: "var(--gold)" }} /> North Star</div>
+              {profile?.name && <div className="w-greeting">Hey, <span>{profile.name}</span> 👋</div>}
+              <div className="ns-quote" style={{ marginTop: profile?.name ? ".5rem" : 0 }}>"{profile?.goal || "Your goal will appear here"}"</div>
+              <div className="ns-bar-row" style={{ marginTop: "1rem" }}>
+                <div className="ns-bar"><div className="ns-fill" style={{ width: progress + "%" }} /></div>
+                <div className="ns-pct">{progress}%</div>
               </div>
-            )}
-          </aside>
-
-          {/* ── CHAT TAB ── */}
-          {activeTab === "chat" && (
-            <div className="chat-panel">
-              <div className="chat-persona-header">
-                <div className="persona-avatar-lg">
-                  <PersonaIcon id={persona} size={20} color="var(--gold)" />
-                </div>
-                <div className="persona-header-info">
-                  <h3>PathFinder — {currentP?.label}</h3>
-                  <p>Your personal guide & North Star navigator</p>
-                </div>
-                <div className="online-indicator">
-                  <div className="online-dot" /> Active
-                </div>
-              </div>
-
-              <div className="messages-area">
-                {messages.map((m, i) => (
-                  <div key={i} className={`msg-row ${m.role}`}>
-                    <div className={`msg-av ${m.role}`}>
-                      {m.role === "ai"
-                        ? <Icon.NorthStar size={15} style={{ color: "var(--gold)" }} />
-                        : <Icon.User size={14} color="var(--muted)" />
-                      }
-                    </div>
-                    <div className="bubble">
-                      {m.content === null
-                        ? <div className="typing-indicator"><span/><span/><span/></div>
-                        : m.content.split("\n").map((ln, j, arr) => <span key={j}>{ln}{j<arr.length-1&&<br/>}</span>)
-                      }
-                    </div>
-                  </div>
-                ))}
-                <div ref={endRef} />
-              </div>
-
-              {messages.length === 1 && (
-                <div className="chips-row">
-                  {CHIPS[persona]?.map(c => <button key={c} className="chip" onClick={() => doSend(c)}>{c}</button>)}
-                </div>
-              )}
-
-              {roadmap && (
-                <div className="roadmap-ready-banner" onClick={() => setActiveTab("roadmap")}>
-                  <Icon.Map size={14} color="var(--gold)" />
-                  <span><strong>Your roadmap is ready!</strong> Click to view your personalized path</span>
-                  <span className="rr-arrow"><Icon.ArrowRight size={13} color="var(--gold)" /></span>
-                </div>
-              )}
-
-              <div className="input-area">
-                <textarea ref={textareaRef} className="chat-textarea"
-                  placeholder={blocked ? "Upgrade to Pro to continue your journey..." : "Share your dream, goal, or struggle..."}
-                  value={input} onChange={e => setInput(e.target.value)}
-                  onKeyDown={handleKey} onInput={autoResize} rows={1}
-                  disabled={loading || blocked}
-                />
-                <button className="send-btn" onClick={() => doSend()} disabled={!input.trim() || loading || blocked}>
-                  <Icon.Send size={17} color="var(--night)" />
-                </button>
-              </div>
+              <div className="ns-phase" style={{ marginTop: ".5rem" }}>Phase 1 · Building foundations · {lvl.name}</div>
             </div>
-          )}
 
-          {/* ── ROADMAP TAB ── */}
-          {activeTab === "roadmap" && (
-            <div className="roadmap-panel">
-              {generatingRM && (
-                <div className="gen-banner">
-                  <Icon.Spinner size={16} color="var(--gold)" />
-                  PathFinder is building your personalized roadmap...
-                </div>
-              )}
-
-              {!roadmap && !generatingRM && (
-                <div className="roadmap-empty">
-                  <div className="roadmap-empty-icon">
-                    <Icon.Path size={72} color="var(--star)" />
-                  </div>
-                  <h3>Your roadmap will appear here</h3>
-                  <p>Chat with PathFinder first. After a few meaningful exchanges, your personalized step-by-step plan generates automatically.</p>
-                  <button className="start-chat-btn" onClick={() => setActiveTab("chat")}>
-                    Start chatting <Icon.ArrowRight size={14} color="var(--night)" />
+            <div className="widget" style={{ "--d": 1 }}>
+              <div className="w-title" style={{ justifyContent: "space-between" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: ".38rem" }}>
+                  <I.Lightning s={10} style={{ color: "var(--gold)" }} /> {mood ? `${mood} Quests` : "Daily Quests"}
+                </span>
+                <button className="qq-reload" onClick={refreshQuests} title="Refresh quests"><I.Refresh s={12} c="currentColor" /></button>
+              </div>
+              <div className="mood-row" style={{ marginBottom: "1rem" }}>
+                {MOODS.map(m => (
+                  <button key={m.l} className={`mood-btn${mood === m.l ? " picked" : ""}`} onClick={() => handleMood(m.l)}>
+                    <span className="mood-ico">{m.e}</span>
+                    <span className="mood-lbl">{m.l}</span>
                   </button>
-                </div>
-              )}
-
-              {roadmap && !generatingRM && (
-                <>
-                  <div className="roadmap-header">
-                    <h2>{roadmap.title}</h2>
-                    <p>{roadmap.subtitle}</p>
+                ))}
+              </div>
+              <div style={{ minHeight: "200px" }}>
+                {questsLoading
+                  ? <div style={{ color: "var(--dim)", fontSize: ".8rem", fontStyle: "italic" }}>Generating quests...</div>
+                  : <div className="qq-list">
+                    {quests.map((q, i) => {
+                      const isPending = pendingQ === i;
+                      const isDone = doneQ.includes(i);
+                      return (
+                        <div key={i} className={`qq${isDone ? " done" : ""}`}
+                          onClick={() => { if (!isDone) setPendingQ(isPending ? null : i); }}>
+                          <div className="qq-box">
+                            {isDone && <I.Check s={10} c="var(--aqua)" />}
+                            {isPending && !isDone && <I.Check s={10} c="var(--gold)" />}
+                          </div>
+                          <div className="qq-body">
+                            <div className="qq-title">{q.title}</div>
+                            {isPending && !isDone
+                              ? <div style={{ display: "flex", gap: ".45rem", marginTop: ".4rem", alignItems: "center" }}>
+                                <button style={{ background: "var(--aqua)", color: "var(--ink)", border: "none", borderRadius: "5px", padding: ".28rem .7rem", fontSize: ".72rem", fontWeight: 700, cursor: "pointer", fontFamily: "DM Sans,sans-serif" }}
+                                  onClick={e => { e.stopPropagation(); completeQuest(i); setPendingQ(null); }}>
+                                  ✓ Mark complete
+                                </button>
+                                <button style={{ background: "none", border: "1px solid var(--line)", color: "var(--dim)", borderRadius: "5px", padding: ".28rem .7rem", fontSize: ".72rem", cursor: "pointer", fontFamily: "DM Sans,sans-serif" }}
+                                  onClick={e => { e.stopPropagation(); setPendingQ(null); }}>
+                                  Cancel
+                                </button>
+                              </div>
+                              : <div className="qq-why">{q.why}</div>
+                            }
+                            {!isPending && <div className="qq-meta">
+                              <span className="qq-xp">+{q.xp} XP</span>
+                              <span className={`qq-diff diff-${q.diff?.charAt(0) || "m"}`}>{q.diff}</span>
+                            </div>}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
+                }
+              </div>
+            </div>
+          </div>
 
-                  {roadmap.phases?.map((phase, pi) => (
-                    <div className="roadmap-phase" key={pi}>
-                      <div className="phase-label">
-                        <div className="phase-num">{pi+1}</div>
-                        <span className="phase-title">{phase.title}</span>
-                        {phase.timeline && <span className="phase-timeline">{phase.timeline}</span>}
+          {/* Row 2: Identity | Streak | XP */}
+          <div className="w-row w-row-3">
+            <div className="widget id-card" style={{ "--d": 2 }}>
+              <div className="w-title"><I.Eye s={10} style={{ color: "var(--violet)" }} /> Who You're Becoming</div>
+              {identity ? (
+                <>
+                  <div className="id-headline" style={{ marginBottom: ".75rem" }}>"{identity.headline}"</div>
+                  <div className="id-traits">
+                    {identity.traits?.map((t, i) => (
+                      <div className="id-trait" key={i}>
+                        <div className="id-trait-lbl">{t.label}</div>
+                        <div className="id-trait-bar"><div className="id-trait-fill" style={{ width: t.score + "%", background: traitColors[i % 4] }} /></div>
+                        <div className="id-trait-pct">{t.score}%</div>
                       </div>
-                      <div className="phase-steps">
-                        {phase.steps?.map((step, si) => {
-                          const k = `${pi}-${si}`, done = checked[k];
-                          return (
-                            <div className="step-card" key={si} style={{ opacity: done ? 0.5 : 1 }}>
-                              <div className={`step-check ${done?"done":""}`} onClick={() => toggleStep(pi, si)}>
-                                {done && <Icon.Check size={10} color="var(--night)" />}
-                              </div>
-                              <div className="step-content">
-                                <h4 style={{ textDecoration: done?"line-through":"none" }}>{step.title}</h4>
-                                <p>{step.detail}</p>
-                                {step.tag && <span className="step-tag">{step.tag}</span>}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-
-                  {!isPro && (
-                    <div className="roadmap-upsell">
-                      <div className="roadmap-upsell-icon">
-                        <Icon.Lock size={22} color="var(--gold)" />
-                      </div>
-                      <p>Want deeper guidance & weekly check-ins?</p>
-                      <small>Pro members get unlimited chat, milestone tracking, and roadmap refinements as their goals evolve.</small>
-                      <button className="cta-upgrade" style={{ maxWidth:280, margin:"0 auto", borderRadius:8, padding:"0.75rem", fontSize:"0.88rem" }}
-                        onClick={() => setShowPaywall(true)}>
-                        <Icon.Lightning size={14} color="var(--night)" />
-                        Unlock Pro Features
-                      </button>
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </>
-              )}
+              ) : <div style={{ color: "var(--dim)", fontSize: ".8rem", fontStyle: "italic" }}>Building your identity profile...</div>}
+            </div>
+
+            <div className="widget" style={{ "--d": 3 }}>
+              <div className="w-title"><I.Flame s={10} c="var(--gold)" /> Streak</div>
+              <div className="streak-n">{streak}</div>
+              <div style={{ fontSize: ".75rem", color: "var(--dim)", marginTop: ".25rem" }}>days in a row</div>
+              <div className="streak-dots" style={{ marginTop: ".85rem" }}>{[...Array(7)].map((_, i) => <div key={i} className={`sdot${i < streak ? " lit" : ""}`} />)}</div>
+            </div>
+
+            <div className="widget" style={{ "--d": 4 }}>
+              <div className="w-title"><I.Crystal s={10} style={{ color: "var(--violet)" }} /> XP & Level</div>
+              <div className="lvl-badge">LVL {lvl.lv}</div>
+              <div className="xp-n">{xp}</div>
+              <div style={{ fontSize: ".72rem", color: "var(--dim)", marginTop: ".2rem" }}>total earned</div>
+              <div className="xp-bar" style={{ marginTop: ".75rem" }}><div className="xp-fill" style={{ width: lvl.pct + "%" }} /></div>
+              <div style={{ fontSize: ".68rem", color: "var(--dim)", marginTop: ".3rem" }}>{lvl.toNext} XP → {LEVELS[lvl.lv] || "Legend"}</div>
+            </div>
+          </div>
+
+          {/* Row 3: Narrative + Prophecy */}
+          <div className="w-row w-row-2">
+            <div className="widget narr" style={{ "--d": 5 }}>
+              <div className="w-title"><I.Star s={10} style={{ color: "var(--violet)" }} /> Your Story So Far</div>
+              <div className="narr-row">
+                <div className="narr-av"><I.Star s={14} style={{ color: "var(--gold)" }} /></div>
+                <div className="narr-msg">{narrative || "PathFinder is reading your journey..."}</div>
+              </div>
+              <div className="narr-btns">
+                <button className="narr-btn" onClick={() => setTab("chat")}>Talk to mentor</button>
+                <button className="narr-ghost" onClick={async () => { const n = await genNarrative(profile, wins, msgCount, streak); setNarrative(n); }}>Refresh</button>
+              </div>
+            </div>
+
+            <div className="widget prop" style={{ "--d": 6 }}>
+              <div className="w-title"><I.Eye s={10} style={{ color: "var(--rose)" }} /> Prophecy — What's Coming</div>
+              {prophecy
+                ? <><div className="prop-msg">{prophecy}</div><span className="prop-week">Week 2–4 Prediction</span></>
+                : <div style={{ color: "var(--dim)", fontSize: ".8rem", fontStyle: "italic" }}>Analyzing your path...</div>
+              }
+            </div>
+          </div>
+
+          {/* Row 4: Win Constellation full width */}
+          <div className="w-row w-row-1">
+            <div className="widget" style={{ "--d": 7 }}>
+              <div className="w-title" style={{ justifyContent: "space-between" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: ".38rem" }}>
+                  <I.Crystal s={10} style={{ color: "var(--aqua)" }} /> Win Constellation
+                </span>
+                <div style={{ display: "flex", alignItems: "baseline", gap: ".3rem" }}>
+                  <span className="const-counter">{wins.length}</span>
+                  <span className="const-sub">wins</span>
+                </div>
+              </div>
+              <div className="const-wrap"><Constellation wins={wins} /></div>
+            </div>
+          </div>
+
+        </div>}
+
+        {/* ══════════ ROADMAP ══════════ */}
+        {tab === "roadmap" && <div className="rm-view">
+          {!roadmap ? (
+            <div className="rm-empty">
+              <I.Map s={46} c="var(--dim)" />
+              <h3>Your roadmap is building</h3>
+              <p style={{ fontSize: ".88rem", maxWidth: "320px", lineHeight: "1.65" }}>Chat with your mentor. After a few real exchanges, PathFinder generates a phase-by-phase roadmap built entirely around your conversations — not generic templates.</p>
+              <button style={{ marginTop: ".6rem", background: "var(--gold)", color: "var(--ink)", border: "none", padding: ".72rem 1.4rem", borderRadius: "6px", fontFamily: "DM Sans,sans-serif", fontWeight: 600, fontSize: ".86rem", cursor: "pointer", display: "flex", alignItems: "center", gap: ".45rem" }} onClick={() => setTab("chat")}>
+                Start talking <I.Arrow s={13} c="var(--ink)" />
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="rm-hd">
+                <h2>{roadmap.title}</h2>
+                <p>{roadmap.subtitle}</p>
+              </div>
+              {roadmap.phases?.map((ph, pi) => (
+                <div className="rm-phase" key={pi}>
+                  <div className="rph-hd">
+                    <div className="rph-n">{pi + 1}</div>
+                    <span className="rph-title">{ph.title}</span>
+                    {ph.timeline && <span className="rph-time">{ph.timeline}</span>}
+                  </div>
+                  <div className="rm-steps">
+                    {ph.steps?.map((st, si) => {
+                      const k = `${pi}-${si}`, done = rmCk[k];
+                      return (
+                        <div className="rm-step" key={si} style={{ opacity: done ? .48 : 1 }}>
+                          <div className={`rm-check${done ? " ck" : ""}`} onClick={() => toggleRm(pi, si)}>{done && <I.Check s={9} c="var(--ink)" />}</div>
+                          <div className="rm-sc">
+                            <h4 style={{ textDecoration: done ? "line-through" : "none" }}>{st.title}</h4>
+                            <p>{st.detail}</p>
+                            {st.tag && <span className="stag">{st.tag}</span>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>}
+
+        {/* ══════════ MENTOR CHAT ══════════ */}
+        {tab === "chat" && <div className="chat-view">
+          <div className="chat-hd">
+            <div className="chat-av"><I.Star s={15} style={{ color: "var(--gold)" }} /></div>
+            <div className="chat-info"><h3>PathFinder Mentor</h3><p>Transformation guide · not a chatbot</p></div>
+            <div className="online"><div className="odot" /> Active</div>
+          </div>
+
+          <div className="msgs">
+            {msgs.map((m, i) => (
+              <div key={i} className={`mrow ${m.role}`}>
+                <div className={`mav ${m.role}`}>
+                  {m.role === "ai" ? <I.Star s={12} style={{ color: "var(--gold)" }} /> : <I.User s={11} c="var(--dim)" />}
+                </div>
+                <div className="bub">
+                  {m.content === null
+                    ? <div className="typing"><span /><span /><span /></div>
+                    : m.content.split("\n").map((ln, j, a) => <span key={j}>{ln}{j < a.length - 1 && <br />}</span>)
+                  }
+                </div>
+              </div>
+            ))}
+            <div ref={endRef} />
+          </div>
+
+          {msgs.length <= 1 && (
+            <div className="chips">
+              {["What should I do today?", "What's actually blocking me?", "Tell me what you see in me", "Generate my roadmap now"].map(c => (
+                <button key={c} className="chip" onClick={() => doSend(c)}>{c}</button>
+              ))}
             </div>
           )}
+
+          {roadmap && (
+            <div style={{ margin: "0 1.4rem .6rem", background: "rgba(232,184,75,.07)", border: "1px solid var(--line-gold)", borderRadius: "8px", padding: ".58rem .95rem", fontSize: ".78rem", display: "flex", alignItems: "center", gap: ".48rem", cursor: "pointer" }} onClick={() => setTab("roadmap")}>
+              <I.Map s={12} c="var(--gold)" /><strong style={{ color: "var(--gold)" }}>Roadmap ready</strong> — view your personalized path →
+            </div>
+          )}
+
+          <div className="iarea">
+            <textarea ref={taRef} className="ita"
+              placeholder={blocked ? "Upgrade to Pro to continue..." : "Talk to your mentor..."}
+              value={input} onChange={e => setInput(e.target.value)}
+              onKeyDown={hk} onInput={ar} rows={1} disabled={loading || blocked}
+            />
+            <button className="sbtn" onClick={() => doSend()} disabled={!input.trim() || loading || blocked}>
+              <I.Send s={14} c="var(--ink)" />
+            </button>
+          </div>
+        </div>}
+
+      </div>
+    </div >
+
+    {/* XP TOAST */}
+    {xpToast && <div className="xpt"><I.Star s={11} style={{ color: "var(--violet)" }} /> +{xpToast.amt} XP · {xpToast.lbl}</div>}
+
+    {/* PAYWALL */}
+    {
+      showPW && <div className="overlay" onClick={e => e.target === e.currentTarget && setShowPW(false)}>
+        <div className="pw">
+          <div className="pw-ico"><I.Star s={26} style={{ color: "var(--gold)" }} /></div>
+          <h2>Unlock Your Full Transformation</h2>
+          <p>You've used your free messages. Upgrade for unlimited mentor access, advanced quest generation, full roadmap evolution, and identity tracking.</p>
+          <div className="plans">
+            <div className="plan">
+              <h3>Monthly</h3><div className="pprice">$12<span>/mo</span></div>
+              <div className="pfeats">Unlimited mentor<br />Daily quest gen<br />Full roadmap</div>
+            </div>
+            <div className="plan f">
+              <div className="pbest"><I.Star s={9} style={{ color: "var(--gold)" }} /> Best Value</div>
+              <h3>Annual</h3><div className="pprice">$79<span>/yr</span></div>
+              <div className="pfeats">Everything Monthly<br />Identity tracking<br />Prophecy engine<br />Save 45%</div>
+            </div>
+          </div>
+          <button className="pw-cta" onClick={() => { setIsPro(true); setShowPW(false); }}>
+            <I.Lightning s={14} c="var(--ink)" /> Begin Full Transformation
+          </button>
+          <div className="pw-skip" onClick={() => setShowPW(false)}>Maybe later</div>
         </div>
       </div>
-
-      {/* ── PAYWALL ── */}
-      {showPaywall && (
-        <div className="overlay" onClick={e => e.target===e.currentTarget && setShowPaywall(false)}>
-          <div className="paywall-modal">
-            <div className="paywall-icon-wrap">
-              <Icon.NorthStar size={26} style={{ color: "var(--gold)" }} />
-            </div>
-            <h2>Unlock Your Full Path</h2>
-            <p>You've reached your free message limit. Upgrade to keep the momentum going — your North Star isn't going anywhere, but your window to act is now.</p>
-            <div className="plan-cards">
-              <div className="plan-card">
-                <h3>Monthly</h3>
-                <div className="plan-price">$12<span>/mo</span></div>
-                <div className="plan-features">Unlimited chat<br/>Roadmap generation<br/>Progress tracking</div>
-              </div>
-              <div className="plan-card featured">
-                <div className="plan-best">
-                  <Icon.Sparkle size={10} color="var(--gold)" /> Best Value
-                </div>
-                <h3>Annual</h3>
-                <div className="plan-price">$79<span>/yr</span></div>
-                <div className="plan-features">Everything in Monthly<br/>Priority responses<br/>Milestone check-ins<br/>Save 45%</div>
-              </div>
-            </div>
-            <button className="cta-upgrade" onClick={() => { setIsPro(true); setShowPaywall(false); }}>
-              <Icon.Lightning size={15} color="var(--night)" />
-              Start Pro — Unlock Everything
-            </button>
-            <div className="paywall-skip" onClick={() => setShowPaywall(false)}>Maybe later (stay on free)</div>
-          </div>
-        </div>
-      )}
-    </>
-  );
+    }
+  </>);
 }
