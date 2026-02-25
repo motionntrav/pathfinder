@@ -2457,10 +2457,35 @@ body {
     box-shadow: 0 6px 28px rgba(0, 0, 0, .3)
 }
 
+/* ── PRIMARY: North Star — most important widget ── */
+.widget.ns {
+    background: linear-gradient(145deg, rgba(232, 184, 75, .07) 0%, rgba(4, 5, 13, 0) 55%);
+    border-color: rgba(232, 184, 75, .22);
+    border-left: 3px solid var(--gold);
+    box-shadow: 0 0 40px rgba(232, 184, 75, .05), inset 0 1px 0 rgba(232, 184, 75, .08)
+}
+
+.widget.ns:hover {
+    border-color: rgba(232, 184, 75, .38);
+    box-shadow: 0 8px 36px rgba(232, 184, 75, .1)
+}
+
+/* ── PRIMARY: Quest hero ── */
 .widget.quest-hero {
     border-top: 3px solid var(--gold);
     background: linear-gradient(160deg, rgba(232, 184, 75, .05) 0%, rgba(4, 5, 13, 0) 60%);
     padding-top: 1.6rem
+}
+
+/* ── FEATURED: Identity card ── */
+.widget.id-card {
+    background: linear-gradient(145deg, rgba(157, 127, 240, .06) 0%, rgba(4, 5, 13, 0) 55%);
+    border-color: rgba(157, 127, 240, .2);
+    border-left: 2px solid rgba(157, 127, 240, .5)
+}
+
+.widget.id-card:hover {
+    border-color: rgba(157, 127, 240, .38)
 }
 
 .w-title {
