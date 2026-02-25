@@ -65,11 +65,11 @@ Write one short prophecy/prediction (2-3 sentences). Predict a SPECIFIC challeng
 
 /** Persona-specific identity traits — what actually matters per path */
 const PERSONA_TRAITS = {
-    highschool: ["Independence", "Resourcefulness", "Vision", "Resilience"],
-    business: ["Revenue Thinking", "Leadership", "Consistency", "Execution"],
-    traveler: ["Adaptability", "Courage", "Resourcefulness", "Freedom Mindset"],
+    career: ["Adaptability", "Professional Courage", "Consistency", "Self-Belief"],
+    hustle: ["Revenue Thinking", "Discipline", "Consistency", "Execution"],
     fitness: ["Discipline", "Physical Resilience", "Consistency", "Mental Toughness"],
-    student: ["Focus", "Academic Grit", "Consistency", "Confidence"],
+    finance: ["Financial Discipline", "Long-term Thinking", "Consistency", "Wealth Mindset"],
+    mindset: ["Emotional Resilience", "Self-Awareness", "Consistency", "Inner Peace"],
     custom: ["Consistency", "Courage", "Clarity", "Momentum"],
 };
 

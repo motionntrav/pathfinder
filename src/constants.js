@@ -9,20 +9,20 @@ export const MOODS = [
 ];
 
 export const PERSONAS = [
-    { id: "highschool", label: "High School Grad", sub: "Alternative paths beyond college" },
-    { id: "business", label: "Small Business Owner", sub: "Leads, growth & systems" },
-    { id: "traveler", label: "World Traveler", sub: "Remote income & adventure" },
-    { id: "fitness", label: "Fitness Journey", sub: "Build muscle & transform" },
-    { id: "student", label: "Nursing Student", sub: "Pass exams, launch career" },
+    { id: "career", label: "Career Changer", sub: "Breaking into a new field" },
+    { id: "hustle", label: "Side Hustler", sub: "Building income outside a 9-5" },
+    { id: "fitness", label: "Fitness & Health", sub: "Transform your body and energy" },
+    { id: "finance", label: "Financial Freedom", sub: "Build wealth and escape debt" },
+    { id: "mindset", label: "Mental Health & Mindset", sub: "Build emotional strength and clarity" },
     { id: "custom", label: "My Own Path", sub: "Something unique to me" },
 ];
 
 export const PERSONA_DESC = {
-    highschool: "I just graduated and need a different path",
-    business: "I run a business and want to grow it",
-    traveler: "I want to travel the world and live freely",
-    fitness: "I want to transform my body and health",
-    student: "I'm in school and need help succeeding",
+    career: "I want to switch careers and break into something new",
+    hustle: "I want to build income streams outside my day job",
+    fitness: "I want to transform my body and feel genuinely healthy",
+    finance: "I want to build real wealth and stop living paycheck to paycheck",
+    mindset: "I want to strengthen my mental health and emotional resilience",
     custom: "My goal is something else entirely",
 };
 
