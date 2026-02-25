@@ -1939,6 +1939,70 @@ body {
     border-radius: 12px 2px 12px 12px
 }
 
+/* ── Markdown inside AI bubbles ── */
+.md-bub p {
+    margin: 0 0 .55em;
+    line-height: 1.7
+}
+
+.md-bub p:last-child {
+    margin-bottom: 0
+}
+
+.md-bub strong {
+    font-weight: 700;
+    color: var(--star)
+}
+
+.md-bub em {
+    font-style: italic;
+    color: rgba(221, 232, 255, .82)
+}
+
+.md-bub ul,
+.md-bub ol {
+    padding-left: 1.3em;
+    margin: .35em 0 .55em
+}
+
+.md-bub li {
+    margin-bottom: .28em;
+    line-height: 1.62
+}
+
+.md-bub li::marker {
+    color: var(--gold);
+    font-size: .8em
+}
+
+.md-bub code {
+    font-family: 'DM Mono', monospace;
+    font-size: .8em;
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: .15em .4em;
+    color: var(--aqua)
+}
+
+.md-bub h1,
+.md-bub h2,
+.md-bub h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    margin: .6em 0 .3em;
+    color: var(--gold)
+}
+
+.md-bub blockquote {
+    border-left: 2px solid var(--line-gold);
+    padding-left: .75em;
+    margin: .35em 0;
+    color: rgba(221, 232, 255, .65);
+    font-style: italic
+}
+
+
 .typing {
     display: flex;
     gap: 5px;

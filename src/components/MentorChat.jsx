@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import ReactMarkdown from "react-markdown";
 import { I } from "../icons.jsx";
 import { useGameStore } from "../store/gameStore.js";
 import { useUiStore } from "../store/uiStore.js";
@@ -46,10 +47,12 @@ export function MentorChat({ profile, onSend, onTabChange }) {
                         <div className={`mav ${m.role}`}>
                             {m.role === "ai" ? <I.Star s={12} style={{ color: "var(--gold)" }} /> : <I.User s={11} c="var(--dim)" />}
                         </div>
-                        <div className="bub">
+                        <div className={`bub${m.role === "ai" ? " md-bub" : ""}`}>
                             {m.content === null
                                 ? <div className="typing"><span /><span /><span /></div>
-                                : m.content.split("\n").map((ln, j, a) => <span key={j}>{ln}{j < a.length - 1 && <br />}</span>)
+                                : m.role === "ai"
+                                    ? <ReactMarkdown>{m.content}</ReactMarkdown>
+                                    : m.content
                             }
                         </div>
                     </div>
