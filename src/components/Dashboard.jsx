@@ -1,7 +1,7 @@
 import { I } from "../icons.jsx";
 import { MOODS } from "../constants.js";
 import { Constellation } from "./Constellation.jsx";
-import { useGameStore, getLevel } from "../store/gameStore.js";
+import { useGameStore, getLevel, getProgress } from "../store/gameStore.js";
 import { useUiStore } from "../store/uiStore.js";
 import { genNarrative, genIdentity } from "../services/ai.js";
 
@@ -13,7 +13,7 @@ export function Dashboard({ profile, onCompleteQuest, onRefreshQuests, onHandleM
     const quests = useGameStore(s => s.quests);
     const doneQ = useGameStore(s => s.doneQ);
     const wins = useGameStore(s => s.wins);
-    const progress = useGameStore(s => s.progress);
+    const progress = useGameStore(getProgress);
     const narrative = useGameStore(s => s.narrative);
     const prophecy = useGameStore(s => s.prophecy);
     const identity = useGameStore(s => s.identity);

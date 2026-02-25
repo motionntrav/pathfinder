@@ -29,6 +29,17 @@ export function getLevel(xp) {
 // XP by difficulty — engine-assigned, not LLM-assigned
 export const XP_BY_DIFF = { easy: 25, medium: 50, hard: 100 };
 
+/**
+ * Derived progress toward North Star — never arbitrary.
+ * 5% base + 6% per quest win (≤55%) + 8% per roadmap milestone (≤35%)
+ * Max 95% — 100% reserved for an explicit "goal achieved" event.
+ */
+export function getProgress(state) {
+    const questPct = Math.min(state.wins.length * 6, 55);
+    const rmPct = Math.min(Object.values(state.rmCk).filter(Boolean).length * 8, 35);
+    return Math.min(95, 5 + questPct + rmPct);
+}
+
 /** Returns "YYYY-MM-DD" in the user's local timezone */
 function today() {
     return new Date().toLocaleDateString("en-CA"); // "en-CA" gives ISO date format
@@ -49,7 +60,6 @@ export const useGameStore = create(
             quests: [],
             doneQ: [],              // IDs of completed quests this session
             wins: [],               // completed quest titles (for constellation)
-            progress: 8,            // north star progress %
             narrative: "",
             prophecy: "",
             identity: null,
@@ -97,7 +107,6 @@ export const useGameStore = create(
                 set((s) => ({
                     doneQ: [...s.doneQ, quest.id],
                     wins: [...s.wins, quest.title],
-                    progress: Math.min(100, s.progress + 3),
                 }));
                 return { xpGain, ...result };
             },
@@ -127,7 +136,6 @@ export const useGameStore = create(
                 streak: s.streak,
                 lastActiveDate: s.lastActiveDate,
                 wins: s.wins,
-                progress: s.progress,
                 narrative: s.narrative,
                 prophecy: s.prophecy,
                 identity: s.identity,
