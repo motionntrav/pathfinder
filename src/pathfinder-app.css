@@ -42,22 +42,7 @@ body {
     overflow: hidden
 }
 
-/* ── STARFIELD ── */
-#sf {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background: radial-gradient(ellipse at 52% 6%, #160e35 0%, #04050d 58%)
-}
 
-.s {
-    position: absolute;
-    border-radius: 50%;
-    background: #fff;
-    animation: tw var(--d, 3s) ease-in-out infinite;
-    opacity: var(--o, .5)
-}
 
 @keyframes tw {
 
