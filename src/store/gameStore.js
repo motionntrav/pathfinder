@@ -29,24 +29,58 @@ export function getLevel(xp) {
 // XP by difficulty — engine-assigned, not LLM-assigned
 export const XP_BY_DIFF = { easy: 25, medium: 50, hard: 100 };
 
+/** Returns "YYYY-MM-DD" in the user's local timezone */
+function today() {
+    return new Date().toLocaleDateString("en-CA"); // "en-CA" gives ISO date format
+}
+
+/** Days between two "YYYY-MM-DD" strings (ignores time) */
+function daysDiff(a, b) {
+    return Math.round((new Date(b) - new Date(a)) / 86_400_000);
+}
+
 export const useGameStore = create(
     persist(
         (set, get) => ({
             // ── State ──
             xp: 0,
             streak: 1,
+            lastActiveDate: null,   // "YYYY-MM-DD" of last app open
             quests: [],
-            doneQ: [],        // IDs of completed quests this session
-            wins: [],         // completed quest titles (for constellation)
-            progress: 8,      // north star progress %
+            doneQ: [],              // IDs of completed quests this session
+            wins: [],               // completed quest titles (for constellation)
+            progress: 8,            // north star progress %
             narrative: "",
             prophecy: "",
             identity: null,
             mood: null,
             roadmap: null,
-            rmCk: {},         // roadmap step checkbox state
+            rmCk: {},               // roadmap step checkbox state
 
             // ── Actions ──
+
+            /**
+             * Call once on app mount.
+             * - Same day  → update timestamp only (no change to streak)
+             * - Yesterday → streak + 1
+             * - 2+ days   → streak resets to 1
+             */
+            tickStreak: () => {
+                const { lastActiveDate, streak } = get();
+                const t = today();
+                if (!lastActiveDate) {
+                    // First ever open — initialise
+                    set({ lastActiveDate: t, streak: 1 });
+                    return;
+                }
+                if (lastActiveDate === t) return; // already ticked today
+                const diff = daysDiff(lastActiveDate, t);
+                set({
+                    lastActiveDate: t,
+                    streak: diff === 1 ? streak + 1 : 1,
+                });
+            },
+
             addXp: (amount) => {
                 const prev = get().xp;
                 const next = prev + amount;
@@ -91,6 +125,7 @@ export const useGameStore = create(
             partialize: (s) => ({
                 xp: s.xp,
                 streak: s.streak,
+                lastActiveDate: s.lastActiveDate,
                 wins: s.wins,
                 progress: s.progress,
                 narrative: s.narrative,

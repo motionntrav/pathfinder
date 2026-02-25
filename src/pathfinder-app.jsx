@@ -53,6 +53,9 @@ export default function App() {
   const [show, setShow] = useState(false);
   const endRef = useRef(null);
 
+  // ── Tick streak on every app open (day-based) ──
+  useEffect(() => { useGameStore.getState().tickStreak(); }, []);
+
   // ── Auto-scroll chat ──
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, loading]);
 
