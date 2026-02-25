@@ -63,11 +63,23 @@ Write one short prophecy/prediction (2-3 sentences). Predict a SPECIFIC challeng
     catch { return "Around week three, you'll wake up one morning and the goal will feel distant — like a story you told yourself. That's not failure. That's the moment where everyone else quits and you don't."; }
 }
 
+/** Persona-specific identity traits — what actually matters per path */
+const PERSONA_TRAITS = {
+    highschool: ["Independence", "Resourcefulness", "Vision", "Resilience"],
+    business: ["Revenue Thinking", "Leadership", "Consistency", "Execution"],
+    traveler: ["Adaptability", "Courage", "Resourcefulness", "Freedom Mindset"],
+    fitness: ["Discipline", "Physical Resilience", "Consistency", "Mental Toughness"],
+    student: ["Focus", "Academic Grit", "Consistency", "Confidence"],
+    custom: ["Consistency", "Courage", "Clarity", "Momentum"],
+};
+
 /** Generate identity trait scores (who they're becoming) */
 export async function genIdentity(profile, wins, msgCount) {
-    const sys = `For someone pursuing "${profile.goal}", generate identity trait scores (0-100) showing who they're BECOMING.
-Return ONLY JSON (no markdown): {"headline":"You're becoming someone who...(complete in 8 words max)","traits":[{"label":"Consistency","score":number},{"label":"Courage","score":number},{"label":"Clarity","score":number},{"label":"Momentum","score":number}]}
-Base scores on: ${wins.length} wins, ${msgCount} conversations. Be encouraging but honest. Early stage = lower scores.`;
+    const traits = PERSONA_TRAITS[profile?.persona] || PERSONA_TRAITS.custom;
+    const traitList = traits.map(t => `{"label":"${t}","score":number}`).join(",");
+    const sys = `For someone pursuing "${profile.goal}" as a ${profile.persona}, generate identity trait scores (0-100) showing who they're BECOMING.
+Return ONLY JSON (no markdown): {"headline":"You're becoming someone who...(complete in 8 words max)","traits":[${traitList}]}
+Base scores on: ${wins.length} wins, ${msgCount} conversations. Be encouraging but honest. Early stage = lower scores (10-40). Do NOT change the trait labels — use exactly as given.`;
     try {
         const raw = await ai([{ role: "user", content: "Generate identity" }], sys);
         const m = raw.match(/\{[\s\S]*\}/);
@@ -75,11 +87,9 @@ Base scores on: ${wins.length} wins, ${msgCount} conversations. Be encouraging b
     } catch { /* fall through */ }
     return {
         headline: "You're becoming someone who chooses action",
-        traits: [
-            { label: "Consistency", score: 15 },
-            { label: "Courage", score: 30 },
-            { label: "Clarity", score: 45 },
-            { label: "Momentum", score: 20 },
-        ],
+        traits: traits.map((label, i) => ({
+            label,
+            score: [15, 30, 45, 20][i],
+        })),
     };
 }
