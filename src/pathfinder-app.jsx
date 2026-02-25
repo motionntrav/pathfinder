@@ -129,6 +129,8 @@ export default function App() {
     const blocked = !isPro && msgCount >= FREE_LIMIT;
     if (blocked) { setShowPW(true); return; }
     setInput("");
+    const { setChatError, clearChatError } = useUiStore.getState();
+    clearChatError(); // dismiss any previous error
     const currentMsgs = useUiStore.getState().msgs;
     const hist = [...currentMsgs, { role: "user", content: msg }];
     addMsg({ role: "user", content: msg });
@@ -148,7 +150,9 @@ export default function App() {
         setNarrative(narr);
       }
     } catch (e) {
-      updateLastMsg({ content: `Error: ${e.message}` });
+      // Remove the placeholder AI bubble so the thread stays clean
+      useUiStore.getState().removeLastMsg();
+      setChatError(e.message || "Something went wrong. Try again.");
     } finally { setLoading(false); }
   };
 

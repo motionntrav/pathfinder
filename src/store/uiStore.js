@@ -15,6 +15,7 @@ export const useUiStore = create((set) => ({
     burst: null,          // { x, y }
     questsLoading: false,
     pendingQ: null,       // quest awaiting confirm
+    chatError: null,      // string | null — shown as dismissable banner
 
     // ── Actions ──
     setTab: (tab) => set({ tab }),
@@ -26,6 +27,8 @@ export const useUiStore = create((set) => ({
     setPendingQ: (pendingQ) => set({ pendingQ }),
     setXpShimmer: (xpShimmer) => set({ xpShimmer }),
     setBurst: (burst) => set({ burst }),
+    setChatError: (msg) => set({ chatError: msg }),
+    clearChatError: () => set({ chatError: null }),
 
     addMsg: (msg) => set((s) => ({
         msgs: [...s.msgs, msg],
@@ -37,6 +40,8 @@ export const useUiStore = create((set) => ({
         if (msgs.length > 0) msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], ...patch };
         return { msgs };
     }),
+
+    removeLastMsg: () => set((s) => ({ msgs: s.msgs.slice(0, -1) })),
 
     showToast: (amt, lbl) => {
         set({ xpToast: { amt, lbl } });

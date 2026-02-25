@@ -17,7 +17,8 @@ export function MentorChat({ profile, onSend, onTabChange }) {
     const input = useUiStore(s => s.input);
     const loading = useUiStore(s => s.loading);
     const isPro = useUiStore(s => s.isPro);
-    const { setInput } = useUiStore.getState();
+    const chatError = useUiStore(s => s.chatError);
+    const { setInput, clearChatError } = useUiStore.getState();
 
     const endRef = useRef(null);
     const taRef = useRef(null);
@@ -72,6 +73,30 @@ export function MentorChat({ profile, onSend, onTabChange }) {
                 <div style={{ margin: "0 1.4rem .6rem", background: "rgba(232,184,75,.07)", border: "1px solid var(--line-gold)", borderRadius: "8px", padding: ".58rem .95rem", fontSize: ".78rem", display: "flex", alignItems: "center", gap: ".48rem", cursor: "pointer" }}
                     onClick={() => onTabChange("roadmap")}>
                     <I.Map s={12} c="var(--gold)" /><strong style={{ color: "var(--gold)" }}>Roadmap ready</strong> — view your personalized path →
+                </div>
+            )}
+
+            {/* Error banner */}
+            {chatError && (
+                <div style={{
+                    margin: "0 1.4rem .5rem",
+                    background: "rgba(244,114,182,.1)",
+                    border: "1px solid rgba(244,114,182,.35)",
+                    borderRadius: "8px",
+                    padding: ".55rem .9rem",
+                    fontSize: ".78rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: ".6rem",
+                    color: "rgba(244,114,182,.9)",
+                }}>
+                    <span>⚠ {chatError}</span>
+                    <button onClick={clearChatError} style={{
+                        background: "none", border: "none", cursor: "pointer",
+                        color: "rgba(244,114,182,.7)", fontSize: "1rem", lineHeight: 1,
+                        padding: "0 .2rem", fontFamily: "inherit",
+                    }}>✕</button>
                 </div>
             )}
 
