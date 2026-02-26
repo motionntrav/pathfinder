@@ -38,8 +38,7 @@ body {
 body {
     font-family: 'DM Sans', sans-serif;
     background: var(--ink);
-    color: var(--star);
-    overflow: hidden
+    color: var(--star)
 }
 
 
