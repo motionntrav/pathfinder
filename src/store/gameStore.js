@@ -57,6 +57,8 @@ export const useGameStore = create(
             xp: 0,
             streak: 1,
             lastActiveDate: null,   // "YYYY-MM-DD" of last app open
+            boarded: false,
+            profile: null,          // { name, goal, persona, situation, age }
             quests: [],
             doneQ: [],              // IDs of completed quests this session
             wins: [],               // completed quest titles (for constellation)
@@ -126,6 +128,8 @@ export const useGameStore = create(
             setProphecy: (prophecy) => set({ prophecy }),
             setIdentity: (identity) => set({ identity }),
             setRoadmap: (roadmap) => set({ roadmap }),
+            setProfile: (profile) => set({ profile }),
+            setBoarded: (boarded) => set({ boarded }),
             toggleRmCk: (key) => set((s) => ({ rmCk: { ...s.rmCk, [key]: !s.rmCk[key] } })),
             resetQuests: () => set({ quests: [], doneQ: [] }),
         }),
@@ -135,6 +139,8 @@ export const useGameStore = create(
                 xp: s.xp,
                 streak: s.streak,
                 lastActiveDate: s.lastActiveDate,
+                boarded: s.boarded,
+                profile: s.profile,
                 wins: s.wins,
                 narrative: s.narrative,
                 prophecy: s.prophecy,

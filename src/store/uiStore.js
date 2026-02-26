@@ -16,6 +16,7 @@ export const useUiStore = create((set) => ({
     questsLoading: false,
     pendingQ: null,       // quest awaiting confirm
     chatError: null,      // string | null — shown as dismissable banner
+    showSettings: false,
 
     // ── Actions ──
     setTab: (tab) => set({ tab }),
@@ -29,6 +30,7 @@ export const useUiStore = create((set) => ({
     setBurst: (burst) => set({ burst }),
     setChatError: (msg) => set({ chatError: msg }),
     clearChatError: () => set({ chatError: null }),
+    setShowSettings: (v) => set({ showSettings: v }),
 
     addMsg: (msg) => set((s) => ({
         msgs: [...s.msgs, msg],

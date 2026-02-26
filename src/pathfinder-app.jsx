@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import "./pathfinder-app.css";
 
 // ── Modules ──
-import { I } from "./icons.jsx";
-import { FREE_LIMIT, MENTOR_SYS } from "./constants.js";
+import { I, PersonaIcon } from "./icons.jsx";
+import { FREE_LIMIT, MENTOR_SYS, PERSONAS } from "./constants.js";
 import { ai, parseRm, stripRm, genQuests, genNarrative, genIdentity, genProphecy } from "./services/ai.js";
 import { useGameStore, getLevel } from "./store/gameStore.js";
 import { useUiStore } from "./store/uiStore.js";
@@ -28,8 +28,10 @@ export default function App() {
   const roadmap = useGameStore(s => s.roadmap);
   const rmCk = useGameStore(s => s.rmCk);
   const mood = useGameStore(s => s.mood);
+  const storedProfile = useGameStore(s => s.profile);
+  const storedBoarded = useGameStore(s => s.boarded);
   const { setQuests, completeQuest: storeCompleteQuest, setMood, setNarrative,
-    setIdentity, setRoadmap, toggleRmCk, resetQuests } = useGameStore.getState();
+    setIdentity, setRoadmap, toggleRmCk, resetQuests, setProfile: storeSetProfile, setBoarded: storeSetBoarded } = useGameStore.getState();
 
   // ── UI state ──
   const tab = useUiStore(s => s.tab);
@@ -46,11 +48,13 @@ export default function App() {
   const questsLoading = useUiStore(s => s.questsLoading);
   const { setTab, setInput, setLoading, setIsPro, setShowPW, setQuestsLoading,
     setPendingQ, setXpShimmer, setBurst, addMsg, updateLastMsg,
-    showToast, showLevelUp, clearLevelUp } = useUiStore.getState();
+    showToast, showLevelUp, clearLevelUp, setShowSettings } = useUiStore.getState();
+  const showSettings = useUiStore(s => s.showSettings);
 
-  const [boarded, setBoarded] = useState(false);
-  const [profile, setProfile] = useState(null);
-  const [show, setShow] = useState(false);
+  // ── profile / boarded from store (persisted) ──
+  const [boarded, setBoarded] = useState(() => useGameStore.getState().boarded);
+  const [profile, setProfile] = useState(() => useGameStore.getState().profile);
+  const [show, setShow] = useState(boarded); // already boarded → show shell immediately
   const endRef = useRef(null);
 
   // ── Tick streak on every app open (day-based) ──
@@ -71,8 +75,10 @@ export default function App() {
   const handleDone = useCallback(async ({ persona, situation, goal, name, age, prologueProphecy }) => {
     const prof = { persona, situation, goal, name, age };
     setProfile(prof);
-    addMsg({ role: "ai", content: `${name ? `Hey ${name}` : "Hello"} — you've named your North Star: *"${goal}"*\n\nThat took courage. Most people never say it out loud. I'm not here to give you information; I'm here to help you become the version of yourself who actually lives that goal.\n\nBefore I map your path, tell me something real: what have you already tried? And what stopped you?` });
+    storeSetProfile(prof);
     setBoarded(true);
+    storeSetBoarded(true);
+    addMsg({ role: "ai", content: `${name ? `Hey ${name}` : "Hello"} — you've named your North Star: *"${goal}"*\n\nThat took courage. Most people never say it out loud. I'm not here to give you information; I'm here to help you become the version of yourself who actually lives that goal.\n\nBefore I map your path, tell me something real: what have you already tried? And what stopped you?` });
     setTimeout(() => setShow(true), 80);
     if (prologueProphecy) useGameStore.getState().setProphecy(prologueProphecy);
 
@@ -178,6 +184,7 @@ export default function App() {
         <div className="bar-right">
           <div className="pill pill-xp"><I.Star s={9} style={{ color: "var(--violet)" }} />{xp} XP</div>
           <div className="pill pill-str"><I.Flame s={10} c="var(--gold)" />{streak}d</div>
+          {boarded && <button className="icon-btn" onClick={() => setShowSettings(true)} title="Edit profile"><I.Settings s={15} c="var(--dim)" /></button>}
           {!isPro && <button className="pro-btn" onClick={() => setShowPW(true)}><I.Lightning s={12} c="var(--ink)" />Pro</button>}
         </div>
       </header>
@@ -263,5 +270,107 @@ export default function App() {
         </div>
       </div>
     )}
+
+    {/* SETTINGS / PROFILE EDIT */}
+    {showSettings && (
+      <ProfileEditModal
+        profile={profile}
+        onClose={() => setShowSettings(false)}
+        onSave={async (updated) => {
+          setProfile(updated);
+          storeSetProfile(updated);
+          setShowSettings(false);
+          setQuestsLoading(true);
+          const { wins: w, msgCount: mc } = { wins: useGameStore.getState().wins, msgCount: useUiStore.getState().msgCount };
+          const [q, narr, ident] = await Promise.all([
+            genQuests(updated, mood),
+            genNarrative(updated, w, mc, streak),
+            genIdentity(updated, w, mc),
+          ]);
+          setQuests(q); setNarrative(narr); setIdentity(ident);
+          setQuestsLoading(false);
+        }}
+      />
+    )}
   </>);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  PROFILE EDIT MODAL
+// ─────────────────────────────────────────────────────────────
+function ProfileEditModal({ profile, onClose, onSave }) {
+  const [name, setName] = useState(profile?.name || "");
+  const [goal, setGoal] = useState(profile?.goal || "");
+  const [persona, setPersona] = useState(profile?.persona || "");
+  const [saving, setSaving] = useState(false);
+
+  const canSave = goal.trim() && persona && !saving;
+
+  const handleSave = async () => {
+    if (!canSave) return;
+    setSaving(true);
+    await onSave({ ...profile, name: name.trim(), goal: goal.trim(), persona });
+    setSaving(false);
+  };
+
+  const fieldStyle = {
+    width: "100%", background: "rgba(255,255,255,.05)", border: "1px solid var(--line)",
+    borderRadius: 8, padding: ".7rem .9rem", color: "var(--star)",
+    fontFamily: "DM Sans,sans-serif", fontSize: ".9rem", outline: "none",
+  };
+
+  return (
+    <div className="overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="pw" style={{ maxWidth: 460 }}>
+        <div className="pw-ico"><I.Settings s={22} c="var(--dim)" /></div>
+        <h2 style={{ fontSize: "1.4rem", marginBottom: ".3rem" }}>Edit Your Profile</h2>
+        <p style={{ fontSize: ".82rem", color: "var(--dim)", marginBottom: "1.5rem" }}>
+          Changes regenerate your quests, narrative, and identity.
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem", width: "100%", textAlign: "left" }}>
+          {/* Name */}
+          <div>
+            <label style={{ fontSize: ".68rem", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--dim)", display: "block", marginBottom: ".4rem" }}>Your name</label>
+            <input style={fieldStyle} value={name} onChange={e => setName(e.target.value.slice(0, 40))} placeholder="First name (optional)" />
+          </div>
+
+          {/* Goal */}
+          <div>
+            <label style={{ fontSize: ".68rem", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--dim)", display: "block", marginBottom: ".4rem" }}>North Star goal</label>
+            <textarea style={{ ...fieldStyle, fontFamily: "Cormorant Garamond,serif", fontSize: "1.05rem", fontStyle: "italic", resize: "none", lineHeight: 1.5 }}
+              rows={3} value={goal} onChange={e => setGoal(e.target.value.slice(0, 200))} placeholder="My North Star goal..." />
+          </div>
+
+          {/* Persona */}
+          <div>
+            <label style={{ fontSize: ".68rem", letterSpacing: ".12em", textTransform: "uppercase", color: "var(--dim)", display: "block", marginBottom: ".55rem" }}>Your path</label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".5rem" }}>
+              {PERSONAS.map(p => {
+                const active = persona === p.id;
+                return (
+                  <div key={p.id} onClick={() => setPersona(p.id)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: ".6rem", padding: ".65rem .85rem", borderRadius: 9,
+                      background: active ? "rgba(232,184,75,.08)" : "rgba(255,255,255,.03)",
+                      border: `1px solid ${active ? "var(--gold)" : "var(--line)"}`,
+                      cursor: "pointer", transition: "all .18s"
+                    }}>
+                    <PersonaIcon id={p.id} s={14} c={active ? "var(--gold)" : "var(--dim)"} />
+                    <span style={{ fontSize: ".75rem", fontWeight: 600, color: active ? "var(--gold)" : "var(--star)" }}>{p.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <button className="pw-cta" style={{ marginTop: "1.5rem", opacity: canSave ? 1 : .4, cursor: canSave ? "pointer" : "not-allowed" }}
+          disabled={!canSave} onClick={handleSave}>
+          {saving ? "Saving…" : "Save & Regenerate"}
+        </button>
+        <div className="pw-skip" onClick={onClose}>Cancel</div>
+      </div>
+    </div>
+  );
 }
