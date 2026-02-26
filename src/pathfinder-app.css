@@ -2513,6 +2513,59 @@ body {
     color: var(--gold)
 }
 
+/* ── SKELETON LOADERS ── */
+@keyframes shimmer {
+    from {
+        background-position: -400px 0
+    }
+
+    to {
+        background-position: 400px 0
+    }
+}
+
+.skel {
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, .04) 25%,
+            rgba(255, 255, 255, .09) 50%,
+            rgba(255, 255, 255, .04) 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.6s infinite linear;
+    border-radius: 6px
+}
+
+.skel-line {
+    height: 11px;
+    margin-bottom: .55rem;
+    border-radius: 5px
+}
+
+.skel-line.sm {
+    height: 9px
+}
+
+.skel-line.lg {
+    height: 14px
+}
+
+.skel-line.short {
+    width: 55%
+}
+
+.skel-line.med {
+    width: 78%
+}
+
+.skel-line.full {
+    width: 100%
+}
+
+.skel-bar {
+    height: 7px;
+    border-radius: 4px;
+    margin: .3rem 0 .6rem
+}
+
 /* Constellation line draw animation */
 @keyframes draw-line {
     to {

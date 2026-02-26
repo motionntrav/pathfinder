@@ -61,7 +61,17 @@ export function Dashboard({ profile, onCompleteQuest, onRefreshQuests, onHandleM
                     </div>
                     <div style={{ minHeight: "200px" }}>
                         {questsLoading
-                            ? <div style={{ color: "var(--dim)", fontSize: ".8rem", fontStyle: "italic" }}>Generating quests...</div>
+                            ? <div style={{ display: "flex", flexDirection: "column", gap: ".85rem", paddingTop: ".15rem" }}>
+                                {[0, 1, 2].map(i => (
+                                    <div key={i} style={{ display: "flex", gap: ".75rem", alignItems: "flex-start" }}>
+                                        <div className="skel" style={{ width: 18, height: 18, borderRadius: 5, flexShrink: 0, marginTop: 2 }} />
+                                        <div style={{ flex: 1 }}>
+                                            <div className="skel skel-line med" />
+                                            <div className="skel skel-line sm short" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                             : <div className="qq-list">
                                 {quests.map((q) => {
                                     const isPending = pendingQ === q.id;
@@ -119,7 +129,17 @@ export function Dashboard({ profile, onCompleteQuest, onRefreshQuests, onHandleM
                                 ))}
                             </div>
                         </>
-                    ) : <div style={{ color: "var(--dim)", fontSize: ".8rem", fontStyle: "italic" }}>Building your identity profile...</div>}
+                    ) : (
+                        <>
+                            <div className="skel skel-line lg med" style={{ marginBottom: "1rem" }} />
+                            {[0, 1, 2, 3].map(i => (
+                                <div key={i} style={{ marginBottom: ".7rem" }}>
+                                    <div className="skel skel-line sm" style={{ width: "40%", marginBottom: ".3rem" }} />
+                                    <div className="skel skel-bar full" />
+                                </div>
+                            ))}
+                        </>
+                    )}
                 </div>
 
                 <div className="widget" style={{ "--d": 3 }}>
@@ -148,7 +168,14 @@ export function Dashboard({ profile, onCompleteQuest, onRefreshQuests, onHandleM
                     <div className="reflect-label"><I.Star s={11} style={{ color: "var(--violet)", opacity: .7 }} /> Your Story So Far</div>
                     <div className="narr-row">
                         <div className="narr-av"><I.Star s={14} style={{ color: "var(--gold)" }} /></div>
-                        <div className="narr-msg">{narrative || "PathFinder is reading your journey..."}</div>
+                        {narrative
+                            ? <div className="narr-msg">{narrative}</div>
+                            : <div style={{ flex: 1 }}>
+                                <div className="skel skel-line full" />
+                                <div className="skel skel-line med" />
+                                <div className="skel skel-line short" />
+                            </div>
+                        }
                     </div>
                     <div className="narr-btns">
                         <button className="narr-btn" onClick={() => onTabChange("chat")}>Talk to mentor</button>
@@ -163,7 +190,11 @@ export function Dashboard({ profile, onCompleteQuest, onRefreshQuests, onHandleM
                     <div className="reflect-label"><I.Eye s={11} style={{ color: "var(--rose)", opacity: .7 }} /> Prophecy — What's Coming</div>
                     {prophecy
                         ? <><div className="prop-msg">{prophecy}</div><span className="prop-week">Week 2–4 Prediction</span></>
-                        : <div style={{ color: "var(--dim)", fontSize: ".8rem", fontStyle: "italic" }}>Analyzing your path...</div>
+                        : <div style={{ paddingTop: ".2rem" }}>
+                            <div className="skel skel-line full" />
+                            <div className="skel skel-line med" />
+                            <div className="skel skel-line short" style={{ marginBottom: 0 }} />
+                        </div>
                     }
                 </div>
             </div>
